@@ -1,0 +1,88 @@
+<style lang="scss">
+  .cell__bd {
+    position: relative;
+  }
+  input {
+    padding-right: 30px;
+  }
+  .icon-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0 10px;
+    color: #B2B2B2;
+    font-size: 28rpx;
+    line-height: 56rpx;
+    border: 0;
+    background-color: transparent;
+    &::after {
+      display: none
+    }
+  }
+</style>
+
+<template>
+  <form report-submit="{{true}}" bindreset="formReset">
+    <view class="cells">
+      <view class="cell">
+        <view class="cell__bd">
+          <input name="name" bindinput="bindKeyInput" placeholder="请输入名称" confirm-type="done" bindconfirm="bindKeyConfirm" maxlength="12" value="{{group_name}}"/>
+          <button class="iconfont icon-close" wx:if="{{hasWord}}" formType="reset"></button>
+        </view>
+      </view>
+    </view>
+  </form>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class FolderGroupsCreate extends wepy.page {
+    config = {
+      navigationBarTitleText: ''
+    }
+    data = {
+      group_id: '',
+      group_name: '',
+      hasWord: false,
+      timeout: null
+    }
+    onLoad(option) {
+      if (option.id) {
+        this.group_id = option.id
+        this.group_name = option.name
+        this.hasWord = !!option.name
+      }
+      wepy.setNavigationBarTitle({
+        title: option.id ? '修改组名' : '新建分组'
+      })
+    }
+    methods = {
+      bindKeyInput(e) {
+        this.hasWord = !!e.detail.value
+      },
+      formReset() {
+        this.hasWord = false
+      },
+      bindKeyConfirm(e) {
+        console.log(e)
+        if (!e.detail.value) return
+        const params = { group_name: e.detail.value }
+        wepy.showLoading()
+        let ps = null
+        if (this.group_id) {
+          ps = this.$parent.put(`/card-groups/${this.group_id}`, params)
+        } else {
+          ps = this.$parent.post(`/card-groups`, params)
+        }
+        ps.then(res => {
+          console.log(res)
+          wepy.hideLoading()
+          wepy.navigateBack({
+            delta: 1
+          })
+        })
+      }
+    }
+  }
+</script>

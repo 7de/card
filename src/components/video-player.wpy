@@ -1,0 +1,123 @@
+<style lang="scss">
+  .video-model {
+    display: none;
+    opacity: 0;
+    &__video {
+      top: 0;
+      left: 0;
+      z-index: 1100;
+      width: 750rpx;
+      height: 420rpx;
+    }
+    &__btn-area {
+      z-index: 1000;
+      bottom: 30rpx;
+      left: 30rpx;
+      right: 30rpx;
+    }
+  }
+  .video-model_active {
+      display: block;
+      opacity: 1;
+      .video-model {
+        &__mask, 
+        &__video,
+        &__btn-area {
+          position: fixed;
+        }
+      }
+    }
+</style>
+
+<template>
+  <view class="video-model{{isShow ? ' video-model_active' : ''}}">
+    <view class="mask" @tap="hide"></view>
+    <video class="video-model__video" src="{{url}}" id="player"></video>
+    <view class="video-model__btn-area" hidden="{{save === 'false'}}">
+      <button type="primary" @tap="save">保存视频</button>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class VideoPlayerComponent extends wepy.component {
+    props = {
+      url: String,
+      isShow: {
+        type: Boolean,
+        twoWay: true
+      },
+      save: {
+        type: String,
+        default: 'false',
+        twoWay: true
+      }
+    }
+    data = {
+      videoContext: null
+    }
+    methods = {
+      set(url) {
+        this.url = url
+      },
+      show() {
+        console.log(this.save)
+        this.isShow = true
+      },
+      hide() {
+        this.isShow = false
+        this.videoContext.pause()
+      },
+      save() {
+        wepy.showLoading({mask: true})
+        wepy.downloadFile({
+          // url: 'http://image-test.51simuhui.com/upload/card/1/video/2017/1218/6c51d494fb7e475532ca1cd60faa0081.mp4',
+          url: this.url,
+          success: function(res) {
+            console.log(res)
+            let tempFilePath = res.tempFilePath
+            wepy.saveVideoToPhotosAlbum({
+              filePath: tempFilePath,
+              success: function(res) {
+                wepy.hideLoading()
+                wepy.showModal({
+                  title: '温馨提示',
+                  content: '保存成功,请在相册查收',
+                  showCancel: false
+                })
+              },
+              fail: function(res) {
+                console.log(res)
+                wepy.hideLoading()
+                wepy.showModal({
+                  title: '温馨提示',
+                  content: '保存失败',
+                  showCancel: false
+                })
+              }
+            })
+          },
+          fail: function(res) {
+            console.log(res)
+            wepy.hideLoading()
+            wepy.showModal({
+              title: '温馨提示',
+              content: '视频下载失败',
+              showCancel: false
+            })
+          }
+        })
+      }
+    }
+    watch = {
+      isShow(curVal, oldVal) {
+        this.$emit('toggle', curVal)
+      }
+    }
+    onLoad(res) {
+      this.videoContext = wepy.createVideoContext('player')
+    }
+  }
+</script>

@@ -1,0 +1,18 @@
+<style lang="scss">
+  
+</style>
+
+<template>
+  <view class="form-cell">
+    <view class="form-cell__hd">{{title}}</view>
+    <view class="form-cell__bd"></view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+
+export default class FormCellComponent extends wepy.component {
+
+}
+</script>

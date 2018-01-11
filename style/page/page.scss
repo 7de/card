@@ -1,0 +1,17 @@
+page {
+  background-color: #f2f2f2;
+}
+
+scroll-view {
+  &::before,
+  &::after {
+    content: " ";
+    display: table;
+    overflow: hidden;
+  }
+}
+
+@import './page-error.scss';
+@import './page-redeem.scss';
+@import './page-card.scss';
+@import './page-message.scss';

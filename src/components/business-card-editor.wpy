@@ -1,0 +1,427 @@
+<style lang="scss">
+  .business-card-editor {
+    position: absolute;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    right: 0;
+    movable-area.business-card {
+      margin: 10px auto;
+      background-color: transparent;
+      overflow: visible;
+    }
+    & ~ scroll-view {
+      padding-top: 190px;
+      box-sizing: border-box;
+      position: relative;
+    }
+    & + scroll-view {
+      padding-right: 30px;
+    }
+  }
+
+  .business-card-editor__toggles {
+    position: absolute;
+    top: 200px;
+    right: 0;
+  }
+  .business-card-editor__toggle {
+    position: relative;
+    margin-bottom: 10px;
+    padding-left: 5px;
+    display: flex;
+    width: 30px;
+    line-height: 2;
+    align-items: center;
+    background-color: #1875f0;
+    text-align: center;
+    transition: all .3s ease;
+    box-shadow:1px 1px 5px;
+    box-sizing: border-box;
+    border-radius: 2px 0 0 2px;
+    .iconfont {
+      color: #f2f2f2;
+      font-size: 14px;
+    }
+  }
+  .business-card-editor__toggle_active {
+    margin-left: -10px;
+    padding-left: 10px;
+    width: 40px;
+    background-color: #E64340;
+  }
+</style>
+
+<template>
+  <view class="business-card-editor" hidden="{{!complete}}">
+    <canvas canvasId="cardCanvas" style="margin:10px auto;width:{{width}}px;height:{{height}}px;"></canvas>
+  </view>
+  <view class="business-card-editor" hidden="{{complete}}">
+    <movable-area class="business-card" catchtouchstart="clearToggle" style="width:{{width}}px;height:{{height}}px;">
+
+      <image class="business-card__image" src="{{image}}" wx:if="{{image}}"/>
+
+      <movable-view class="business-card__item{{toggle === 'logo' ? ' business-card__item_active' : ''}}" direction="all" x="{{logo.left}}" y="{{logo.top}}" style="{{logo.style}}" data-field="logo" catchtouchstart="handlerStart" catchtouchmove="handlerMove" catchtouchend="handlerEnd">
+        <view class="business-card__item__x"><text class="business-card__item__text">{{position.left}}</text></view>
+        <view class="business-card__item__y"><text class="business-card__item__text">{{position.top}}</text></view>
+        <image class="business-card__image" src="{{logo.value}}" />
+      </movable-view>
+
+      <movable-view class="business-card__item{{toggle === 'video' ? ' business-card__item_active' : ''}}" direction="all" x="{{video.left}}" y="{{video.top}}" style="{{video.style}}" data-field="video" catchtouchstart="handlerStart" catchtouchmove="handlerMove" catchtouchend="handlerEnd">
+        <view class="business-card__item__x"><text class="business-card__item__text">{{position.left}}</text></view>
+        <view class="business-card__item__y"><text class="business-card__item__text">{{position.top}}</text></view>
+        <view class="business-card__null">
+          <view class="business-card__null__content">
+            <i class="iconfont icon-play"></i>
+          </view>
+        </view>
+      </movable-view>
+
+      <movable-view class="business-card__item{{toggle === 'name' ? ' business-card__item_active' : ''}}" x="{{name.left}}" y="{{name.top}}" style="{{name.style}}" data-field="name" direction="all" catchtouchstart="handlerStart" catchtouchmove="handlerMove" catchtouchend="handlerEnd">
+        <view class="business-card__item__x"><text class="business-card__item__text">{{position.left}}</text></view>
+        <view class="business-card__item__y"><text class="business-card__item__text">{{position.top}}</text></view>
+        <text class="business-card__item__text">{{name.value}}</text>
+      </movable-view>
+
+      <movable-view class="business-card__item{{toggle === 'job' ? ' business-card__item_active' : ''}}" x="{{job.left}}" y="{{job.top}}" style="{{job.style}}" data-field="job" direction="all" catchtouchstart="handlerStart" catchtouchmove="handlerMove" catchtouchend="handlerEnd">
+        <view class="business-card__item__x"><text class="business-card__item__text">{{position.left}}</text></view>
+        <view class="business-card__item__y"><text class="business-card__item__text">{{position.top}}</text></view>
+        <text class="business-card__item__text">{{job.value}}</text>
+      </movable-view>
+
+      <movable-view class="business-card__item{{toggle === 'tel' ? ' business-card__item_active' : ''}}" x="{{tel.left}}" y="{{tel.top}}" style="{{tel.style}}" data-field="tel" direction="all" catchtouchstart="handlerStart" catchtouchmove="handlerMove" catchtouchend="handlerEnd">
+        <view class="business-card__item__x"><text class="business-card__item__text">{{position.left}}</text></view>
+        <view class="business-card__item__y"><text class="business-card__item__text">{{position.top}}</text></view>
+        <text class="business-card__item__text">{{tel.value}}</text>
+      </movable-view>
+
+      <movable-view class="business-card__item{{toggle === 'company' ? ' business-card__item_active' : ''}}" x="{{company.left}}" y="{{company.top}}" style="{{company.style}}" data-field="company" direction="all" catchtouchstart="handlerStart" catchtouchmove="handlerMove" catchtouchend="handlerEnd">
+        <view class="business-card__item__x"><text class="business-card__item__text">{{position.left}}</text></view>
+        <view class="business-card__item__y"><text class="business-card__item__text">{{position.top}}</text></view>
+        <text class="business-card__item__text">{{company.value}}</text>
+      </movable-view>
+
+      <movable-view class="business-card__item{{toggle === 'address' ? ' business-card__item_active' : ''}}" x="{{address.left}}" y="{{address.top}}" style="{{address.style}}" data-field="address" direction="all" catchtouchstart="handlerStart" catchtouchmove="handlerMove" catchtouchend="handlerEnd">
+        <view class="business-card__item__x"><text class="business-card__item__text">{{position.left}}</text></view>
+        <view class="business-card__item__y"><text class="business-card__item__text">{{position.top}}</text></view>
+        <text class="business-card__item__text">{{address.value}}</text>
+      </movable-view>
+
+      <movable-view class="business-card__item{{toggle === 'email' ? ' business-card__item_active' : ''}}" x="{{email.left}}" y="{{email.top}}" style="{{email.style}}" data-field="email" direction="all" catchtouchstart="handlerStart" catchtouchmove="handlerMove" catchtouchend="handlerEnd">
+        <view class="business-card__item__x"><text class="business-card__item__text">{{position.left}}</text></view>
+        <view class="business-card__item__y"><text class="business-card__item__text">{{position.top}}</text></view>
+        <text class="business-card__item__text">{{email.value}}</text>
+      </movable-view>
+
+    </movable-area>
+    <view class="business-card-editor__toggles">
+      <repeat for="{{keys}}">
+        <view class="business-card-editor__toggle{{toggle === item ? ' business-card-editor__toggle_active' : ''}}" data-toggle="{{item}}" @tap="setToggle">
+          <i class="iconfont icon-{{item}}"></i>
+        </view>
+      </repeat>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  export default class BusinessCardEditorComponent extends wepy.component {
+    mixins = [ConfigMixin]
+    props = {
+      toggle: {
+        type: Boolean,
+        twoWay: true
+      },
+      image: String,
+      code: {
+        type: Object,
+        twoWay: true
+      },
+      complete: {
+        type: Boolean,
+        default: false,
+        twoWay: true
+      },
+      width: {
+        type: Number,
+        default: 345
+      },
+      height: {
+        type: Number,
+        default: 170
+      }
+    }
+    data = {
+      keys: [],
+      logo: {},
+      video: {},
+      name: {},
+      job: {},
+      tel: {},
+      company: {},
+      address: {},
+      email: {},
+      position: { left: 0, top: 0 },
+      image: null
+    }
+    methods = {
+      setToggle(e) {
+        const { toggle } = e.currentTarget.dataset
+        this.toggle = this.toggle === toggle ? '' : toggle
+      },
+      clearToggle() {
+        this.toggle = null
+      },
+      handlerStart(e) {
+        const { clientX, clientY } = e.changedTouches[0]
+        this.touchStartX = clientX
+        this.touchStartY = clientY
+
+        const { field } = e.currentTarget.dataset
+        this.toggle = field
+        // console.log(`------- ${field} -------`)
+
+        // const { left, top } = this[field]
+        // console.log(`开始(x: ${left}, y: ${top})`)
+      },
+      handlerMove(e) {
+        const { field } = e.currentTarget.dataset
+        const { left, top, width, height } = this[field]
+        const { clientX, clientY } = e.changedTouches[0]
+        const moveX = clientX - this.touchStartX
+        const moveY = clientY - this.touchStartY
+        // console.log(`移动(x: ${moveX}, y: ${moveY})`)
+
+        // X轴修正
+        let endX = left + moveX
+        const minX = 0
+        const maxX = this.width - width
+        if (endX < minX) {
+          endX = minX
+        } else if (endX > maxX) {
+          endX = maxX
+        }
+
+        // Y轴修正
+        let endY = top + moveY
+        const minY = 0
+        const maxY = this.height - height
+        if (endY < minY) {
+          endY = minY
+        } else if (endY > maxY) {
+          endY = maxY
+        }
+
+        this.position.left = endX
+        this.position.top = endY
+      },
+      handlerEnd(e) {
+        const { field } = e.currentTarget.dataset
+        let { left, top } = this.position
+        const { width, height } = this[field]
+
+        // X轴修正
+        const minX = 0
+        const maxX = this.width - width
+        if (left < minX) {
+          left = minX
+        } else if (left > maxX) {
+          left = maxX
+        }
+
+        // Y轴修正
+        const minY = 0
+        const maxY = this.height - height
+        if (top < minY) {
+          top = minY
+        } else if (top > maxY) {
+          top = maxY
+        }
+
+        this[field].left = left
+        this[field].top = top
+        // console.log(`结果(x: ${left}, y: ${top})`)
+
+        // 渲染父级页面信息
+        this.$parent.$apply()
+
+        this.position.left = left
+        this.position.top = top
+      },
+      getCode() {
+        // 傻瓜式生成样式代码~ 呵呵哒！
+        let code = this.getCode()
+        wepy.setClipboardData({
+          data: JSON.stringify(code),
+          success: () => {
+            console.log('复制成功', code)
+          }
+        })
+      },
+      create() {
+        const cW = this.width  // 画布长度
+        const cH = this.height // 画布宽度
+        const card = wepy.createCanvasContext('cardCanvas')
+        card.setTextAlign('left')
+        card.setTextBaseline('top')
+        this.keys.forEach(key => {
+          const { display, value, left, top, width, height, color } = this.data[key]
+          switch (key) {
+            case 'image': // 背景图
+              if (this.data[key]) {
+                card.drawImage(this.data[key], 0, 0, cW, cH)
+              }
+              break
+            case 'logo': // 头像
+              if (display === 'block') {
+                card.drawImage(value, left, top, width, height)
+              }
+              break
+            default:
+              const fontSize = this.data[key]['font-size'] || 13
+              if (display === 'block') {
+                card.setFillStyle(color || '#595959')
+                card.setFontSize(fontSize)
+                card.fillText(value, left, top)
+              }
+          }
+        })
+        card.draw()
+        this.complete = true
+      },
+      download() {
+        wepy.showLoading({ mask: true })
+        wepy.canvasToTempFilePath({
+          canvasId: 'cardCanvas',
+          fileType: 'png',
+          success: res => {
+            console.log(res.tempFilePath)
+            wepy.saveImageToPhotosAlbum({
+              filePath: res.tempFilePath,
+              success: res => {
+                wepy.showToast({ title: '保存成功' })
+              },
+              fail: res => {
+                const { errMsg } = res
+                switch (errMsg) {
+                  case 'saveImageToPhotosAlbum:fail auth deny':
+                    // 打开授权界面
+                    wepy.openSetting()
+                    wepy.hideLoading()
+                    break
+                }
+                wepy.showToast({
+                  icon: 'loading',
+                  title: '保存失败'
+                })
+              }
+            })
+          },
+          fail: () => wepy.hideLoading()
+        })
+      },
+      cssToObj(style) { // css 转 json
+        let obj = {}
+        style.split(';').forEach(item => {
+          if (item !== '') {
+            let key = item.split(':')[0].trim()
+            let val = item.split(':')[1].trim()
+            if (/rpx$/.test(val)) {
+              val = parseInt(val) / 2
+            } else if (/px$/.test(val)) {
+              val = parseInt(val)
+            }
+            obj[key] = val
+          }
+        })
+        return obj
+      },
+      objToCss(obj) { // json 转 css
+        let css = ''
+        for (let key in obj) {
+          let val = obj[key]
+          switch (key) {
+            case '':
+              break
+            case 'content':
+              css += `${key}:"${val}";`
+              break
+            case 'width':
+            case 'height':
+            case 'font-size':
+              css += `${key}:${val}px;`
+              break
+            default:
+              css += `${key}:${val};`
+          }
+        }
+        return css
+      }
+    }
+
+    watch = {
+      code (curVal) {
+        for (let key in curVal) {
+          this[key] = curVal[key]
+        }
+        // 默认增加背景
+        this.keys = ['image']
+        this.keys.push(...Object.keys(curVal))
+
+        if (this.keys.includes(this.toggle) && this.toggle !== 'image') {
+          const { left, top } = curVal[this.toggle]
+          this.position.left = left
+          this.position.top = top
+        }
+
+        this.$apply()
+      },
+      toggle (field) {
+        if (this.keys.includes(this.toggle) && this.toggle !== 'image') {
+          const { left, top } = this.code[field]
+          this.position.left = left
+          this.position.top = top
+          this.$apply()
+        }
+      },
+      image(curVal, oldVal) {
+        // 判断是否本地资源
+        // ASCII表 | 56 . | 57 / |
+        this.image = /^\56\56\57|http|wxfile|^$/.test(curVal) ? curVal : `${this.host}${curVal}`
+        this.$apply()
+      }
+    }
+
+    onLoad() {
+      console.log('CardEditorComponent onLoad')
+    }
+
+    getCode() {
+      let code = {}
+      this.keys.forEach(key => {
+        switch (key) {
+          case 'image': // 背景图
+            code[key] = this.data[key]
+            break
+          default:
+            const { display, left, top, style } = this.data[key]
+            let newStyle = ''
+            if (display !== 'none') {
+              // ASCII表 | \56 . | \72 : | \73 ; |
+              newStyle = `left:${left || 0}px;top:${top || 0}px;${style}`
+              // 删除content
+              newStyle = newStyle.replace(/content\72\S+(\s+\S+)?\73/, '')
+              // 将 px 转换为 rpx
+              newStyle = newStyle.replace(/\d+(\56\d+)?px\73/g, num => {
+                return parseFloat(num) * 2 + 'rpx;'
+              })
+            }
+            code[key] = newStyle
+        }
+      })
+      return code
+    }
+  }
+</script>

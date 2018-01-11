@@ -1,0 +1,83 @@
+<style lang="scss">
+</style>
+
+<template>
+  <view class="body">
+    <view class="cells">
+      <view class="cell">
+        <view class="cell__hd">
+          <i class="iconfont icon-search mr-10"></i>
+        </view>
+        <view class="cell__bd">
+          <input confirm-type="done" bindblur="search" bindconfirm="search" placeholder="请输入名称/公司"/>
+        </view>
+      </view>
+    </view>
+    <import src="../template/business-card.wxml"/>
+    <checkbox-group class="cells cells_card" bindchange="checkboxChange">
+      <repeat for="{{list}}" key="id" item="item">
+        <label class="cell">
+          <checkbox class="mr-10" value="{{item.info.id}}" color="#1875f0" checked="{{item.info.checked}}"/>
+          <view class="cell__hd">
+            <image class="cell_card__image" src="{{host}}{{item.info.card_image}}" wx:if="{{item.info.card_image}}"/>
+          </view>
+          <view class="cell__bd">
+            <view class="cells_card__title">{{item.info.name}}</view>
+            <view class="cells_card__sub-title">{{item.info.position}}</view>
+            <view class="cells_card__sub-title">{{item.info.company}}</view>
+          </view>
+        </label>
+      </repeat>
+    </checkbox-group>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import RestructureMixin from '../mixins/restructure'
+  export default class FolderGroupSelect extends wepy.page {
+    config = {
+      navigationBarTitleText: '选择成员'
+    }
+    mixins = [RestructureMixin, ConfigMixin]
+    data = {
+      list: []
+    }
+    methods = {
+      checkboxChange(e) {
+        console.log(e.detail.value)
+        const URL = `/card-group/add-cards/${this.id}`
+        this.$parent.post(URL, {card_ids: e.detail.value})
+      },
+      search (e) {
+        this.getCards(e.detail.value)
+      }
+    }
+    onLoad(option) {
+      this.id = option.id
+      this.getCards()
+    }
+    getCards(keyword = '') {
+      wepy.showLoading({mask: true})
+      this.$parent.get('/cards', {search: keyword}).then(res => {
+        const { data } = res
+        this.list = this.restructureList(data)
+        this.$apply()
+        wepy.hideLoading()
+      })
+    }
+    setChecked(list1 = [], list2 = []) {
+      console.log(list1)
+      list1.forEach(item => {
+        item['checked'] = false
+        list2.forEach(el => {
+          if (item.id === el.id) {
+            item['checked'] = true
+          }
+        })
+      })
+      return list1
+    }
+  }
+</script>

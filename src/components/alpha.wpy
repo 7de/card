@@ -1,0 +1,91 @@
+<style type="scss">
+  $fontcolor: #7b7b7b;
+  $activecolor: #13b113;
+  .alpha {
+    width: 30px;
+    text-align: center;
+    position: fixed;
+    z-index: 10;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    .item {
+      display: block;
+      font-size: 22rpx;
+      line-height: 18px;
+      color: #333;
+      font-family: Arial, 'Times New Roman', 'Microsoft YaHei', SimHei;
+    }
+    .active {
+      color: #ffffff;
+      background-color: $activecolor;
+      border-radius: 16px;
+    }
+  }
+  .alpha-toast {
+    width: 240rpx;
+    height: 240rpx;
+    background-color: rgba(17, 17, 17, 0.7);
+    color: #ffffff;
+    font-size: 42rpx;
+    line-height: 240rpx;
+    text-align: center;
+    border-radius: 10rpx;
+    position: fixed;
+    z-index: 10;
+    top: 30%;
+    left: 50%;
+    margin-top: -120rpx;
+    margin-left: -120rpx;
+  }
+</style>
+<template>
+  <view class="alpha" catchtouchmove="handlerMove" catchtouchend="handlerEnd">
+    <block wx:for="{{tags}}" wx:key="index" wx:for-index="index" wx:for-item="item">
+      <text class="item" catchtouchstart="handlerStart({{item}})">{{item}}</text>
+    </block>
+  </view>
+  <view class="alpha-toast" wx:if="{{toastShow}}">{{tag}}</view>
+</template>
+<script>
+  import wepy from 'wepy'
+
+  export default class AlphaComponent extends wepy.component {
+    props = {
+      tags: Array,
+      tag: String
+    }
+    components = {
+    }
+    data = {
+      apHeight: 18,
+      toastShow: false
+    };
+    methods = {
+      handlerStart(i) {
+        this.tag = i
+        this.$emit('onChange', this.tag)
+      },
+      handlerMove(e) {
+        this.toastShow = true
+        let list = this.tags
+        let offsetTop = e.currentTarget.offsetTop - list.length / 2 * this.apHeight
+        let moveY = e.touches[0].clientY
+        let rY = moveY - offsetTop
+        if (rY >= 0) {
+          let index = Math.ceil((rY - this.apHeight) / this.apHeight)
+          if (index >= 0 && index < list.length) {
+            this.tag = list[index]
+            this.$emit('onChange', this.tag)
+          }
+        }
+      },
+      handlerEnd(e) {
+        this.$emit('onChange', '')
+        this.toastShow = false
+      }
+    }
+    onLoad() {
+    }
+  }
+</script>

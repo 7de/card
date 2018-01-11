@@ -1,0 +1,103 @@
+<style lang="scss">
+</style>
+
+<template>
+  <import src="../template/business-card.wxml"/>
+  <view class="body">
+    <template is="business-card" data="{{info, template, host}}" />
+    <view class="grids card" hidden="{{status === 0 && userID === info.creator_user_id}}">
+      <view class="grid" @tap="buyCard" wx:if="{{status === 1}}">
+        <image class="grid__icon" src="../images/icon_card.png"/>
+        <text class="grid__label">递名片</text>
+      </view>
+    </view>
+    <view class="panel panel_info">
+      <view class="panel__bd" wx:if="{{info.introduction || info.image}}">
+        <image class="panel__image" mode="aspectFit" src="{{host}}{{info.image}}" wx:if="{{info.image}}" />
+        <text class="panel__desc" space="ensp" wx:if="{{info.introduction}}">{{info.introduction}}</text>
+      </view>
+    </view>
+  </view>
+  <video-player></video-player>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import VideoPlayer from '@Components/video-player'
+  import ConfigMixin from '../mixins/config'
+  import RestructureMixin from '../mixins/restructure'
+  export default class LibraryDetail extends wepy.page {
+    config = {
+      navigationBarTitleText: '名片详情'
+    }
+    components = {
+      'video-player': VideoPlayer
+    }
+    mixins = [ConfigMixin, RestructureMixin]
+    data = {
+      id: 0,
+      userID: 0,
+      status: 0,
+      info: {},
+      template: {}
+    }
+    methods = {
+      play() {
+        this.$invoke('video-player', 'set', this.host + this.info.video_url)
+        this.$invoke('video-player', 'show')
+      },
+      buyCard() { // 查看更多信息
+        const URL = `/order/buy-card/${this.info.id}`
+        this.$parent.post(URL).then(res => {
+          const { code, data, message } = res
+          console.log(data)
+          if (code === 0) {
+            wepy.navigateTo({url: `library-payment?orderID=${data.id}&orderType=0`})
+          } else {
+            wepy.showModal({
+              title: '温馨提示',
+              content: message,
+              showCancel: false,
+              confirmColor: '#1875f0'
+            })
+          }
+        })
+      }
+    }
+    onLoad(options) {
+      const { id } = options
+      this.id = id
+      const { userID } = this.$parent.globalData
+      this.userID = userID
+      console.log(userID)
+      this.$apply()
+    }
+    onShow() {
+      this.getDetail()
+    }
+    getDetail() {
+      const URL = `/card/${this.id}`
+      this.$parent.get(URL).then(res => {
+        const {
+          data: {
+            card,
+            status
+          }
+        } = res
+        let { info, template } = this.restructure(card)
+        this.status = status
+        // if (status === 1) { // 未购买商品，数据填充
+        //   info['mobile'] = '付款查看更多信息'
+        //   info['address'] = '付款查看更多信息'
+        //   info['email'] = '付款查看更多信息'
+        //   template.tel += 'filter:blur(3px)'
+        //   template.address += 'filter:blur(3px)'
+        //   template.email += 'filter:blur(3px)'
+        // }
+        this.info = info
+        this.template = template
+        this.$apply()
+      })
+    }
+  }
+</script>

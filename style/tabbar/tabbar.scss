@@ -1,0 +1,14 @@
+.tabbar {
+  display: block;
+  position: relative;
+  &__panel {
+    position: relative;
+    padding-bottom: 90rpx;
+    height: 100%;
+    overflow: auto;
+    box-sizing: border-box;
+  }
+}
+
+@import './navbar.scss';
+@import './paybar.scss';

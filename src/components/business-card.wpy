@@ -1,0 +1,212 @@
+<style lang="scss">
+  .business-card__upload {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, .6);
+    text-align: center;
+    .iconfont {
+      color: #ffffff;
+      font-size: 18rpx;
+      line-height: 34rpx;
+    }
+  }
+</style>
+
+<template>
+  <view class="business-card" style="{{cardStyle && cardStyle.card}}">
+    <canvas canvasId="businessCardCanvas" style="{{cardStyle && cardStyle.card}}"></canvas>
+    <view class="business-card__logo" @tap="chooseLogo()" style="{{cardStyle && cardStyle.logo}}">
+      <image class="business-card__image" src="{{host}}{{info.logo_url}}" wx:if="{{info && info.logo_url}}"></image>
+      <view class="business-card__upload"><i class="iconfont icon-camera"></i></view>
+    </view>
+    <!-- 音频播放 -->
+    <slot name="video"></slot>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import ConfigMixin from '../mixins/config'
+export default class BussinessCardComponent extends wepy.component {
+  props = {
+    info: {
+      type: Object,
+      twoWay: true
+    }
+  }
+
+  mixins = [ConfigMixin]
+
+  data = {
+    cardStyle: {},
+    keyMap: {
+      name: { label: '', def: '我的名字' },
+      company: { label: '', def: '公司' },
+      position: { label: '', def: '职务' },
+      email: { label: '邮箱　', def: '' },
+      mobile: { label: '手机　', def: '' },
+      address: { label: '地址　', def: '' }
+    }
+  }
+
+  methods = {
+    update(i, v) {
+      this.info[i] = v
+    },
+    setTemplate(data) {
+      this.cardStyle = data
+    },
+    chooseLogo() {
+      const app = this.$parent.$parent
+      wepy.chooseImage({
+        count: 1,
+        success: res => {
+          wepy.showLoading({mask: true})
+          let uploadFile = res.tempFilePaths[0]
+          app.uploadFile(uploadFile).then(filePath => {
+            this.info['logo_url'] = filePath
+            this.$apply()
+          })
+        }
+      })
+    },
+    create() {}
+  }
+
+  watch = {
+    info (curVal) {
+      this.onChange()
+    },
+    cardStyle (curVal) {
+      this.onChange()
+    }
+  }
+
+  onLoad() {
+    console.log('BussinessCardComponent onLoad')
+  }
+
+  onChange() {
+    let elements = {}
+    for (let k in this.cardStyle) {
+      switch (k) {
+        case 'id':
+        case 'logo':
+        case 'card':
+          break
+        case 'image':
+          const { width, height } = this.cssToObj(this.cardStyle['card'])
+          if (this.cardStyle[k]) {
+            elements[k] = {
+              display: 'block',
+              left: 0,
+              top: 0,
+              width: width,
+              height: height,
+              value: this.cardStyle[k]
+            }
+          } else {
+            elements[k] = {
+              left: 0,
+              top: 0,
+              width: width,
+              height: height
+            }
+          }
+          break
+        case 'address':
+          elements[k] = this.cssToObj(this.cardStyle[k])
+          let address = this.info['address'] || ''
+          elements[k]['value'] = address.length > 15 ? address.substring(0, 15) + '...' : address
+          break
+        default:
+          elements[k] = this.cssToObj(this.cardStyle[k])
+          elements[k]['value'] = this.info[k] || ''
+      }
+    }
+    this.init(elements)
+  }
+
+  cssToObj(style) { // css 转 json
+    const scale = this.windowWidth / 375 // 自适应缩放比例
+    let obj = {}
+    style.split(';').forEach(item => {
+      if (item !== '') {
+        let key = item.split(':')[0].trim()
+        let val = item.split(':')[1].trim()
+        if (/rpx$/.test(val)) {
+          val = parseInt(val) / 2 * scale
+        } else if (/px$/.test(val)) {
+          val = parseInt(val) * scale
+        }
+        obj[key] = val
+      }
+    })
+    return obj
+  }
+
+  objToCss(obj) { // json 转 css
+    let css = ''
+    for (let key in obj) {
+      let val = obj[key]
+      switch (key) {
+        case '':
+          break
+        case 'content':
+          css += `${key}:"${val}";`
+          break
+        case 'width':
+        case 'height':
+        case 'font-size':
+          css += `${key}:${val}px;`
+          break
+        default:
+          css += `${key}:${val};`
+      }
+    }
+    return css
+  }
+  init(elements) {
+    const card = wepy.createCanvasContext('businessCardCanvas')
+    card.setTextAlign('left')
+    card.setTextBaseline('top')
+    let element = {}
+    for (let key in elements) {
+      element = elements[key]
+      const { display, left, top, value, width, height, color } = element
+      switch (key) {
+        case 'logo': // 头像（暂时不处理）
+          break
+        case 'image': // 背景图
+          if (display === 'block') {
+            card.drawImage(value, left, top, width, height)
+          } else {
+            card.setFillStyle('White')
+            card.fillRect(left, top, width, height)
+          }
+          break
+        default:
+          const fontSize = element['font-size'] || 13
+          if (display === 'block') {
+            const { label, def } = this.keyMap[key]
+            card.setFontSize(fontSize)
+            if (label) {
+              card.setFillStyle('Gray')
+              card.fillText(label, left, top)
+              card.translate(fontSize * 3, 0)
+              card.setFillStyle(color || '#595959')
+              card.fillText(value || def, left, top)
+              card.translate(-fontSize * 3, 0)
+            } else {
+              card.setFillStyle(color || '#595959')
+              card.fillText(value || def, left, top)
+            }
+          }
+      }
+    }
+    card.draw()
+  }
+}
+</script>

@@ -1,0 +1,59 @@
+<style lang="scss">
+</style>
+
+<template>
+  <view class="body">
+    <view class="cells">
+      <view class="form-cell form-cell_switch">
+          <view class="form-cell__bd">是否公开您的名片信息？</view>
+          <view class="form-cell__ft">
+            <switch checked="{{info.public}}" bindchange="bindswitchChange" color="#1875f0" />
+          </view>
+        </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  export default class UserSettings extends wepy.page {
+    config = {
+      navigationBarTitleText: '隐私设置'
+    }
+    mixins = [ConfigMixin]
+    data = {
+      info: {}
+    }
+    methods = {
+      bindswitchChange(e) {
+        let value = e.detail.value ? 1 : 0
+        this.update({ public: value })
+      }
+    }
+    onLoad() {
+      this.getCard()
+    }
+    getCard() {
+      wepy.showLoading()
+      this.$parent.get('/card/my-card').then(res => {
+        let { code, data, message } = res
+        if (code === 0) {
+          this.info = data
+          this.$apply()
+        } else {
+          this.onFetchError(message)
+        }
+        this.$apply()
+        wepy.hideLoading()
+      })
+    }
+    update(data) {
+      let PUT_URL = '/card/my-card'
+      let params = Object.assign({}, this.info, data)
+      this.$parent.put(PUT_URL, params).then(res => {
+        // to-do
+      })
+    }
+  }
+</script>

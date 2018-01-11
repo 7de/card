@@ -1,0 +1,101 @@
+<style lang="scss">
+  page {
+    background-color: #ffffff;
+  }
+  .introduce {
+    padding-top: 140rpx;
+    text-align: center;
+    &__logo {
+      width: 100rpx;
+      height: 100rpx;
+    }
+    &__title {
+      margin: 20rpx auto 10rpx;
+      display: block;
+      color: #404040;
+      font-size: 34rpx;
+    }
+    &__subtitle{
+      display: block;
+      color: #586C94;
+      margin-bottom:20rpx;
+      font-size: 26rpx;
+    }
+    &__text-area {
+      padding: 50rpx 30rpx;
+      font-size: 26rpx;
+      line-height: 1.6;
+      text-align: left;
+      position:relative;
+      &::before{
+        content: " ";
+        position: absolute;
+        z-index: 2;
+        left: 30rpx;
+        top: 0;
+        right: 30rpx;
+        height: 1px;
+        border-top: 1px solid #e5e5e5;
+        -webkit-transform-origin: 0 0;
+        transform-origin: 0 0;
+        -webkit-transform: scaleY(0.5);
+        transform: scaleY(0.5);
+      }
+    }
+    &__desc {
+      margin-bottom: 40rpx;
+      color: #999999;
+    }
+    &__link {
+      color: #576b95;
+      vertical-align: top;
+    }
+    &__text {
+      font-size: 22rpx;
+    }
+    &__footer {
+      color: #999999;
+      font-size: 28rpx;
+      line-height: 1.6;
+    }
+  }
+  @media screen and (min-height: 438px) {
+    .introduce__footer {
+      position: fixed;
+      left: 0;
+      bottom: 30rpx;
+      width: 100%;
+      text-align: center;
+    }
+  }
+</style>
+
+<template>
+  <view class="introduce">
+    <image class="introduce__logo" src="../images/logo_new.png"></image>
+    <text class="introduce__title">名片侠</text>
+    <text class="introduce__subtitle">V1.2.0</text>
+    <view class="introduce__text-area">
+      <view class="introduce__desc">“名片侠科技”是一款为用户提供电子名片制作，名片收发，名片信息管理等功能的微信小程序。</view>
+      <view class="introduce__desc">您的每一次使用、每一条反馈，都是我们进步的动力。</view>
+      <view class="introduce__desc">想了解更多，请关注 <text class="introduce__link">名片侠</text> 官网：www.mingpianxia.cn</view>
+    </view>
+    <view class="introduce__footer">
+      <view>由 <text class="introduce__link">名片侠</text> 提供技术支持</view>
+      <view class="introduce__text">Copyright©2018 云端互联网(深圳)有限公司.</view>
+      <view class="introduce__text">粤ICP备18000554</view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  export default class MoreOrderDetail extends wepy.page {
+    config = {
+      navigationBarTitleText: '关于我们'
+    }
+    mixins = [ConfigMixin]
+    data = {}
+  }
+</script>

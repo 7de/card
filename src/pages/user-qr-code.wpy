@@ -1,0 +1,251 @@
+<style lang="scss">
+  .page-qr-code {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    &__title {
+      color: #ffffff;
+      font-size: 51rpx;
+      line-height: 1;
+      text-align: center;
+      position: absolute;
+      top: 175rpx;
+      left: 0;
+      right: 0;
+    }
+    &__canvas {
+      margin: 30rpx auto;
+      width: 690rpx;
+      height: 990rpx;
+      overflow: hidden;
+    }
+    &__ft {
+      color: #4b5d75;
+      font-size: 26rpx;
+      letter-spacing: 1em;
+      text-align: center;
+      position: absolute;
+      bottom: 60rpx;
+      left: 0;
+      right: 0;
+    }
+  }
+
+</style>
+
+<template>
+  <view class="page-card page-qr-code">
+    <canvas class="page-qr-code__canvas" hidden="{{hidden}}" canvas-id="qr-code-canvas" bindlongtap="download"></canvas>
+    <view class="page-qr-code__ft">名片侠，你值得拥有</view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  export default class UserQrCode extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: '#1875f0',
+      navigationBarTitleText: '名片码',
+      navigationBarTextStyle: '#ffffff'
+    }
+    mixins = [ConfigMixin]
+    data = {
+      hidden: true
+    }
+    methods = {
+      download() {
+        wepy.showActionSheet({
+          itemList: ['保存图片'],
+          success: (res) => {
+            const { tapIndex } = res
+            switch (tapIndex) {
+              case 0:
+                this.saveQrCode()
+                break
+            }
+          }
+        })
+      }
+    }
+
+    onRoute() {
+      wepy.showLoading({ mask: true })
+      Promise.all([
+        this.$parent.get('/card/my-card'),
+        this.$parent.get('/card/my-card-code')
+      ]).then(res => {
+        const [cardInfo, cardCode] = res
+        if (cardInfo.code === 0 && cardCode.code === 0) {
+          const { avatarUrl } = this.$parent.globalData.userInfo
+          Promise.all([
+            this.$parent.download(this.host + cardCode.data), // 下载小程序二维码
+            this.$parent.download(avatarUrl) // 下载Logo
+          ]).then(res => {
+            const [qrCode, logo] = res
+            const { name, position, company } = cardInfo.data
+            this.hidden = false
+            this.$apply()
+
+            wepy.hideLoading()
+            this.createQrCode({ qrCode, logo, name, position, company })
+          },
+          fail => {
+            wepy.showModal({
+              title: '系统提示',
+              content: '二维码下载失败',
+              showCancel: false,
+              confirmColor: '#1875f0',
+              success: function() {
+                wepy.switchTab({url: 'user-index'})
+              }
+            })
+          })
+        } else {
+          wepy.showModal({
+            title: '系统提示',
+            content: '请先创建您的名片',
+            showCancel: false,
+            confirmColor: '#1875f0',
+            success: function() {
+              wepy.switchTab({url: 'user-index'})
+            }
+          })
+        }
+        this.$apply()
+      })
+    }
+
+    createQrCode(data) {
+      const { qrCode, logo, name, position, company } = data
+      const qrCanvas = wx.createCanvasContext('qr-code-canvas')
+      const scale = this.windowWidth / 375 // 自适应缩放比例
+      const cWidth = 345 * scale  // 画布宽度
+      const cHeight = 495 * scale // 画布高度
+      const cRadius = 14          // 弧度直径
+      const cBackground = 'White' // 背景颜色
+      const qrSize = 200 * scale  // 二维码尺寸
+      const avSize = 106 * scale  // 头像尺寸
+      const avRadius = avSize / 2 // 头像半径
+
+      // 描边
+      qrCanvas.beginPath()
+      qrCanvas.moveTo(cRadius, avRadius + cRadius)
+      qrCanvas.setLineJoin('round')
+      qrCanvas.setLineWidth(cRadius * 2)
+      qrCanvas.lineTo(cWidth - cRadius, avRadius + cRadius)
+      qrCanvas.lineTo(cWidth - cRadius, cHeight - cRadius)
+      qrCanvas.lineTo(cRadius, cHeight - cRadius)
+      qrCanvas.lineTo(cRadius, avRadius + cRadius)
+      qrCanvas.closePath()
+      qrCanvas.setStrokeStyle(cBackground)
+      qrCanvas.stroke()
+
+      // 填充画布中心
+      qrCanvas.beginPath()
+      qrCanvas.setFillStyle(cBackground)
+      qrCanvas.fillRect(cRadius, avRadius + cRadius, cWidth - cRadius * 2, cHeight - avRadius - cRadius * 2)
+
+      // 默认字居中
+      qrCanvas.setTextAlign('center')
+      qrCanvas.setTextBaseline('top')
+
+      // 姓名
+      qrCanvas.setFillStyle('#111111')
+      qrCanvas.setFontSize(21 * scale)
+      qrCanvas.fillText(name, cWidth / 2, 120 * scale)
+
+      // 职位
+      qrCanvas.setFillStyle('#808080')
+      qrCanvas.setFontSize(13 * scale)
+      qrCanvas.fillText(position, cWidth / 2, 150 * scale)
+
+      // 公司
+      qrCanvas.setFillStyle('#666666')
+      qrCanvas.setFontSize(15 * scale)
+      qrCanvas.fillText(company, cWidth / 2, 177 * scale)
+
+      // 底部信息
+      qrCanvas.setFillStyle('#333333')
+      qrCanvas.setFontSize(13)
+      qrCanvas.fillText('扫码或长按　我的云卡片', cWidth / 2, cHeight - 34 * scale)
+
+      // 绘制头像
+      qrCanvas.save()
+      qrCanvas.beginPath()
+      qrCanvas.setStrokeStyle(cBackground)
+      qrCanvas.setLineWidth(6)
+      qrCanvas.arc(cWidth / 2, avRadius + 3, avRadius, 0, 2 * Math.PI)
+      qrCanvas.stroke()
+      qrCanvas.clip()
+      qrCanvas.setFillStyle(cBackground)
+      qrCanvas.fillRect(cWidth / 2 - avRadius, 3, avSize, avSize)
+      qrCanvas.drawImage(logo, cWidth / 2 - avRadius, 3, avSize, avSize)
+      qrCanvas.restore()
+
+      // 绘制二维码
+      qrCanvas.setStrokeStyle('#feef19')
+      qrCanvas.setLineWidth(5)
+      qrCanvas.setLineCap('round')
+      qrCanvas.beginPath()
+      qrCanvas.moveTo(90 * scale, 450 * scale)
+      qrCanvas.arc(75 * scale, 435 * scale, 15 * scale, 0.5 * Math.PI, 1 * Math.PI)
+      qrCanvas.lineTo(60 * scale, 420 * scale)
+      qrCanvas.stroke()
+      qrCanvas.beginPath()
+      qrCanvas.moveTo(60 * scale, 255 * scale)
+      qrCanvas.arc(75 * scale, 240 * scale, 15 * scale, 1 * Math.PI, 1.5 * Math.PI)
+      qrCanvas.lineTo(90 * scale, 225 * scale)
+      qrCanvas.stroke()
+      qrCanvas.beginPath()
+      qrCanvas.moveTo(cWidth - 90 * scale, 225 * scale)
+      qrCanvas.arc(cWidth - 75 * scale, 240 * scale, 15 * scale, 1.5 * Math.PI, 2 * Math.PI)
+      qrCanvas.lineTo(cWidth - 60 * scale, 255 * scale)
+      qrCanvas.stroke()
+      qrCanvas.beginPath()
+      qrCanvas.moveTo(cWidth - 60 * scale, 420 * scale)
+      qrCanvas.arc(cWidth - 75 * scale, 435 * scale, 15 * scale, 2 * Math.PI, 0.5 * Math.PI)
+      qrCanvas.lineTo(cWidth - 90 * scale, 450 * scale)
+      qrCanvas.stroke()
+      qrCanvas.drawImage(qrCode, (cWidth - qrSize) / 2, cHeight - qrSize - 62 * scale, qrSize, qrSize)
+
+      // 完成绘制
+      qrCanvas.draw()
+    }
+
+    saveQrCode() {
+      wepy.canvasToTempFilePath({
+        canvasId: 'qr-code-canvas',
+        success: (res) => {
+          const tempFilePath = res.tempFilePath
+          wepy.showLoading({ mask: true })
+          wepy.saveImageToPhotosAlbum({
+            filePath: tempFilePath,
+            success: () => {
+              wepy.hideLoading()
+              wepy.showToast({
+                title: '保存成功'
+              })
+            },
+            fail: (res) => {
+              const { errMsg } = res
+              switch (errMsg) {
+                case 'saveImageToPhotosAlbum:fail auth deny':
+                  // 打开授权界面
+                  wepy.openSetting()
+                  wepy.hideLoading()
+                  break
+              }
+              wepy.showToast({
+                icon: 'loading',
+                title: '保存失败'
+              })
+            }
+          })
+        }
+      })
+    }
+  }
+</script>

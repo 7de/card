@@ -1,0 +1,111 @@
+<style lang="scss">
+</style>
+
+<template>
+  <import src="../template/business-card.wxml"/>
+  <scroll-view scroll-y="{{true}}" style="height:{{windowHeight}}px">
+    <view class="btn-area">
+      <button type="primary" @tap="navigateTo" data-value="cards-create">创建电子名片</button>
+      <button type="primary" @tap="navigateTo" data-value="cards-edit">名片码生成器</button>
+    </view>
+    <repeat for="{{list}}" key="cards" item="template">
+      <navigator url="cards-edit?index={{index}}">
+        <template is="business-card" data="{{info, template, host}}" wx:if="{{template.name}}"/>
+      </navigator>
+    </repeat>
+  </scroll-view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  export default class CardsIndex extends wepy.page {
+    config = {
+      navigationBarTitleText: '名片资源'
+    }
+    mixins = [ConfigMixin]
+    data = {
+      list: [],
+      info: {
+        logo_url: '/upload/card/2/image/2017/1209/eb05e3a3c06ce6b5b3de876291f6c5f7.jpg',
+        video_url: ' ',
+        name: '吴韡辉',
+        position: 'Web前端工程师',
+        company: '深圳前海云端网络咨询有限公司',
+        mobile: '15012879833',
+        province_name: '广东省',
+        city_name: '深圳市',
+        area_name: '南山区',
+        address: '高新园区虚拟大学R3-B栋508',
+        email: '52500925@qq.com'
+      }
+    }
+    methods = {
+      navigateTo(e) {
+        const { url } = e.target.dataset
+        wepy.navigateTo({ url })
+      }
+    }
+    onLoad() {
+      const templates = [{
+        id: 1,
+        image: '../images/business-card-background/business-card_7.png',
+        logo: 'width:176rpx;height:114rpx;',
+        video: 'display:block;left:486rpx;top:200rpx;width:176rpx;height:114rpx;',
+        name: 'display:block;left:50rpx;top:120rpx;width:290rpx;height:32rpx;color:#000000;font-size:32rpx;text-align:right;',
+        job: 'display:block;left:352rpx;top:132rpx;width:290rpx;height:20rpx;color:#333333;font-size:20rpx;',
+        tel: 'display:block;left:25rpx;top:246rpx;width:460rpx;height:18rpx;color:#000000;font-size:18rpx;',
+        company: 'display:block;left:25rpx;top:170rpx;width:642rpx;height:30rpx;color:#000000;font-size:30rpx;font-weight:600;',
+        address: 'display:block;left:25rpx;top:216rpx;width:460rpx;height:18rpx;color:#000000;font-size:18rpx;white-space:nowrap;text-overflow:ellipsis;',
+        email: 'display:block;left:25rpx;top:276rpx;width:460rpx;height:18rpx;color:#000000;font-size:18rpx;'
+      }, {
+        image: '../images/business-card-background/business-card_2.png',
+        logo: 'display:block;left:45rpx;top:17rpx;width:176rpx;height:114rpx;',
+        video: 'display:block;left:472rpx;top:23rpx;width:176rpx;height:114rpx;',
+        name: 'display:block;left:45rpx;top:170rpx;width:300rpx;height:36rpx;color:#2f2725;font-size:36rpx;font-weight:600;',
+        job: 'display:block;left:346rpx;top:180rpx;width:300rpx;height:26rpx;color:#e94729;font-size:26rpx;text-align:right;',
+        tel: 'display:block;left:45rpx;top:264rpx;width:602rpx;height:22rpx;color:#2f2725;font-size:22rpx;',
+        company: 'display:block;left:220rpx;top:38rpx;width:250rpx;height:68rpx;color:#2f2725;font-size:34rpx;',
+        address: 'display:block;left:45rpx;top:230rpx;width:602rpx;height:22rpx;color:#2f2725;font-size:22rpx;white-space:nowrap;text-overflow:ellipsis;',
+        email: 'display:block;left:45rpx;top:298rpx;width:602rpx;height:22rpx;color:#2f2725;font-size:22rpx;'
+      }, {
+        image: '../images/business-card-background/business-card_4.jpg',
+        logo: 'display:block;left:155rpx;top:28rpx;width:85rpx;height:95rpx;',
+        video: 'display:block;left:486rpx;top:200rpx;width:176rpx;height:114rpx;',
+        name: 'display:block;left:155rpx;top:162rpx;width:324rpx;height:36rpx;color:#463618;font-size:36rpx;font-weight:600;',
+        job: '',
+        tel: 'display:block;left:205rpx;top:258rpx;width:280rpx;height:18rpx;color:#b1901b;font-size:18rpx;',
+        company: 'display:block;left:155rpx;top:125rpx;width:500rpx;height:28rpx;color:#b1901b;font-size:28rpx;font-weight:600;white-space:nowrap;text-overflow:ellipsis;',
+        address: 'display:flex;left:205rpx;top:210rpx;width:280rpx;height:18rpx;color:#b1901b;font-size:18rpx;height:44rpx;align-items:center;',
+        email: 'display:block;left:230rpx;top:288rpx;width:250rpx;height:18rpx;color:#b1901b;font-size:18rpx;'
+      }, {
+        image: '../images/business-card-background/business-card_5.png',
+        logo: 'display:block;left:517rpx;top:40rpx;color:#eeeeee;width:114rpx;height:114rpx;',
+        video: 'display:block;left:486rpx;top:200rpx;width:176rpx;height:114rpx;',
+        name: 'display:block;left:80rpx;top:48rpx;width:360rpx;height:36rpx;color:#ffffff;font-size:36rpx;',
+        job: 'display:block;left:80rpx;top:93rpx;width:360rpx;height:26rpx;color:#3dc4df;font-size:26rpx;',
+        tel: 'display:block;left:115rpx;top:145rpx;width:360rpx;height:20rpx;color:#eeeeee;font-size:20rpx;',
+        company: 'display:block;left:115rpx;top:234rpx;width:360rpx;height:20rpx;color:#eeeeee;font-size:20rpx;',
+        address: 'display:block;left:115rpx;top:285rpx;width:360rpx;height:40rpx;color:#eeeeee;font-size:20rpx;',
+        email: 'display:block;left:115rpx;top:192rpx;width:360rpx;height:20rpx;color:#eeeeee;font-size:20rpx;white-space:nowrap;text-overflow:ellipsis;'
+      }]
+      wepy.setStorageSync('templates', templates)
+    }
+    onShow() {
+      this.getList()
+    }
+    getList() {
+      // this.$parent.get('/card-resources', { resource_type: 1 }).then(res => {
+      //   const { data } = res
+      //   data.forEach(element => {
+      //     if (element['resource_type'] === 0 || element['resource_type'] === 1) {
+      //       this.list.push(Object.assign({}, {id: element['id']}, element['source']))
+      //     }
+      //   })
+      //   this.$apply()
+      // })
+      this.list = wx.getStorageSync('templates')
+      this.$apply()
+    }
+  }
+</script>

@@ -1,0 +1,51 @@
+<style lang="scss">
+  page {
+    background-color: #ffffff;
+  }
+</style>
+
+<template>
+  <form class="page-message" report-submit="{{true}}" bindsubmit="bindFormSubmit">
+    <view class="page-message__icon-area">
+      <icon type="{{type}}" size="93" />
+    </view>
+    <view class="page-message__text-area">
+      <view class="page-message__title">{{title}}</view>
+      <view class="page-message__desc" wx:if="{{desc}}">失败原因：{{desc}}</view>
+    </view>
+    <view class="page-message__opr-area">
+      <view class="btn-area">
+        <button type="primary" data-type="navigateBack" data-url="1" formType="submit">确认</button>
+        <button type="default" data-type="switchTab" data-url="user-index" formType="submit">返回首页</button>
+      </view>
+    </view>
+    <view class="page-message__extra-area">
+      <view>由 <text class="page-message__link">名片侠</text> 提供技术支持</view>
+      <view class="page-message__text">Copyright©2018 云端互联网(深圳)有限公司.</view>
+      <view class="page-message__text">粤ICP备18000554</view>
+    </view>
+  </form>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  export default class Message extends wepy.page {
+    config = {
+      navigationBarTitleText: '系统消息'
+    }
+    mixins = [ConfigMixin]
+    data = {
+      type: '',
+      title: '',
+      desc: ''
+    }
+    onLoad(options) {
+      const { type, title, desc } = options
+      this.type = type
+      this.title = decodeURI(title)
+      this.desc = decodeURI(desc)
+      this.$apply()
+    }
+  }
+</script>

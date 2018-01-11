@@ -1,0 +1,97 @@
+<style lang="scss">
+  modal {
+    input {
+      padding: 10rpx;
+      border: 1px solid #d9d9d9;
+      text-align: center;
+    }
+  }
+</style>
+
+<template>
+  <form report-submit="{{true}}" bindsubmit="bindFormSubmit">
+    <view class="cells">
+      <view class="cell" @tap="showModal">
+        <view class="cell__bd">新建分组</view>
+        <view class="cell__ft"><i class="iconfont icon-add"></i></view>
+      </view>
+    </view>
+    <view class="cells">
+      <repeat for="{{cardGroups}}" key="id" item="item">
+        <button class="cell cell_access" data-url="/pages/folder-group?id={{item.id}}" formType="submit">
+          <view class="cell__bd">{{item.group_name}} {{item.cards.length > 0 ? '('+item.cards.length+')':''}}</view>
+          <view class="cell__ft"></view>
+        </button>
+      </repeat>
+    </view>
+    <view class="loadmore" wx:if="{{searchLoading}}">
+      <i class="icon-loading"></i>
+      <text class="loadmore__tips">正在加载</text>
+    </view>
+  </form>
+  <modal title="新建分组" bindcancel="hideModal" bindconfirm="bindConfirm" wx:if="{{isShow}}">
+    <input type="text" value="{{cardGroupName}}" maxlength="12" placeholder="请输入分组名称" auto-focus="{{true}}" confirm-type="done" bindinput="bindKeyInput" bindconfirm="bindConfirm" bindblur="bindKeyBlur" />
+  </modal>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  export default class FolderGroups extends wepy.page {
+    config = {
+      navigationBarTitleText: '分组'
+    }
+    mixins = [ConfigMixin]
+    data = {
+      searchLoading: false,
+      isShow: false,
+      cardGroupName: '',
+      cardGroups: {}
+    }
+    methods = {
+      showModal() {
+        this.isShow = true
+        this.cardGroupName = ''
+      },
+      hideModal() {
+        this.isShow = false
+      },
+      bindKeyInput(e) {
+        const { value } = e.detail
+        this.cardGroupName = value
+      },
+      bindKeyBlur(e) {
+        const { value } = e.detail
+        this.cardGroupName = value.trim()
+      },
+      bindConfirm() {
+        if (this.cardGroupName.trim()) {
+          const params = {
+            group_name: this.cardGroupName
+          }
+          this.$parent.post(`/card-groups`, params).then(res => {
+            this.cardGroupName = ''
+            this.isShow = false
+            this.getCardGroups()
+          },
+          fail => {
+
+          })
+        }
+      }
+    }
+    onRoute() {
+      this.getCardGroups()
+    }
+    getCardGroups() {
+      const URL = '/card-groups'
+      this.searchLoading = true
+      this.$parent.get(URL, {expand: 'cards'}).then(res => {
+        const { data } = res
+        this.cardGroups = data.items || []
+        this.searchLoading = false
+        this.$apply()
+      })
+    }
+  }
+</script>

@@ -1,0 +1,13 @@
+.loadmore {
+  margin: 1.5em auto;
+  width: 65%;
+  text-align: center;
+  font-size: 28rpx;
+  &__tips {
+    display: inline-block;
+    color: #666666;
+    vertical-align: middle;
+  }
+}
+
+@import './loadmore_line.scss';

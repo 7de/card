@@ -1,0 +1,112 @@
+<style lang="scss">
+
+</style>
+
+<template>
+  <form class="body" report-submit="{{true}}" bindsubmit="bindFormSubmit">
+    <view class="panel" style="border-top: 1px solid #d9d9d9;border-bottom: 1px solid #d9d9d9;">
+      <view class="panel__bd">
+        <button class="media-box media-box_appmsg" type="inherit" data-url="user-create" formType="submit">
+          <view class="media-box__hd">
+            <image class="media-box__thumb round" src="{{userInfo['logo_url']}}" />
+            <i class="iconfont icon-v-circle"></i>
+          </view>
+          <view class="media-box__bd">
+            <view class="media-box__title">{{userInfo.name}}</view>
+            <view class="media-box__desc">{{userInfo.position}}</view>
+          </view>
+        </button>
+      </view>
+    </view>
+    <view class="cells">
+      <button class="cell cell_access" data-url="more-order-list" formType="submit">
+        <view class="cell__hd"><i class="iconfont icon-order"></i></view>
+        <view class="cell__bd">我的订单</view>
+        <view class="cell__ft"></view>
+      </button>
+      <button class="cell cell_access" data-url="more-redeem-code" formType="submit">
+        <view class="cell__hd"><i class="iconfont icon-redeem"></i></view>
+        <view class="cell__bd">兑换码</view>
+        <view class="cell__ft"></view>
+      </button>
+      <button class="cell cell_access" data-url="more-certification" formType="submit">
+        <view class="cell__hd"><i class="iconfont icon-v"></i></view>
+        <view class="cell__bd">实名认证</view>
+        <view class="cell__ft"></view>
+      </button>
+      <button class="cell cell_access" data-url="more-news-list" formType="submit">
+        <view class="cell__hd"><i class="iconfont icon-bell-o"></i></view>
+        <view class="cell__bd">消息中心</view>
+        <view class="cell__ft"></view>
+      </button>
+    </view>
+    <view class="cells">
+      <button class="cell cell_access" data-url="more-account" formType="submit">
+        <view class="cell__hd"><i class="iconfont icon-wallet"></i></view>
+        <view class="cell__bd">账户余额</view>
+        <view class="cell__ft"></view>
+      </button>
+      <button class="cell cell_access" data-type="mobile" data-value="0755-86538075" formType="submit">
+        <view class="cell__hd"><i class="iconfont icon-kefu"></i></view>
+        <view class="cell__bd">联系客服</view>
+        <view class="cell__ft"></view>
+      </button>
+      <button class="cell cell_access" data-url="more-about" formType="submit">
+        <view class="cell__hd"><i class="iconfont icon-about-me"></i></view>
+        <view class="cell__bd">关于我们</view>
+        <view class="cell__ft"></view>
+      </button>
+    </view>
+    <view class="btn-area">
+      <button type="primary" open-type="share" formType="submit">推荐给朋友</button>
+    </view>
+  </form>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  export default class MoreIndex extends wepy.page {
+    config = {
+      navigationBarTitleText: '更多'
+    }
+    mixins = [ConfigMixin]
+    data = {
+      userInfo: {}
+    }
+
+    onShareAppMessage(res) {
+      return {
+        title: '云卡片',
+        path: '/pages/more-index'
+      }
+    }
+
+    onShow() {
+      console.log()
+      try {
+        let cardInfo = wepy.getStorageSync('cardInfo')
+        if (cardInfo) {
+          this.userInfo = cardInfo
+          this.userInfo['logo_url'] = this.userInfo['logo_url'] ? this.host + this.userInfo['logo_url'] : ''
+          this.$apply()
+        } else {
+          wepy.getUserInfo({
+            withCredentials: false,
+            success: res => {
+              const { userInfo: {
+                avatarUrl,
+                nickName
+              } } = res
+              this.userInfo['logo_url'] = avatarUrl
+              this.userInfo['name'] = nickName
+              this.$apply()
+            }
+          })
+        }
+      } catch (e) {
+        // Do something when catch error
+      }
+    }
+  }
+</script>

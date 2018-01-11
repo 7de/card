@@ -1,0 +1,66 @@
+<template name="form-preview">
+  <view class="form-preview">
+    <view class="form-preview__bd">
+      <view class="form-preview__item">
+        <text class="form-preview__label">名片类型</text>
+        <text class="form-preview__value" wx:if="{{demand && demand.type === 1}}">纸质名片定制</text>
+        <text class="form-preview__value" wx:if="{{demand && demand.type === 2}}">需求名片定制</text>
+        <text class="form-preview__value" wx:if="{{demand && demand.type === 3}}">个人视频定制</text>
+        <text class="form-preview__value" wx:if="{{demand && demand.type === 4}}">企业视频定制</text>
+      </view>
+    </view>
+    <view class="form-preview__bd">
+      <view class="form-preview__item">
+        <text class="form-preview__label">需求详情</text>
+        <text class="form-preview__value">{{demand && demand.describe || ''}}</text>
+      </view>
+    </view>
+    <view class="form-preview__bd">
+      <view class="form-preview__item">
+        <text class="form-preview__label">图片素材</text>
+        <view class="form-preview__value">
+          <block wx:for="{{demand && demand.urls || ''}}" wx:key="imageUrls">
+            <image class="form-preview__image" mode="aspectFit" src="{{host}}{{item}}"></image>
+          </block>
+        </view>
+      </view>
+    </view>
+    <view class="form-preview__bd">
+      <view class="form-preview__item" wx:if="{{demand && demand.contact_username}}">
+        <text class="form-preview__label">联系人</text>
+        <text class="form-preview__value">{{demand && demand.contact_username || ''}}</text>
+      </view>
+      <view class="form-preview__item" wx:if="{{demand && demand.contact_phone}}">
+        <text class="form-preview__label">联系电话</text>
+        <text class="form-preview__value">{{demand && demand.contact_phone || ''}}</text>
+      </view>
+      <view class="form-preview__item" wx:if="{{demand && demand.poster_company}}">
+        <text class="form-preview__label">联系电话</text>
+        <text class="form-preview__value">{{demand && demand.poster_company}}</text>
+      </view>
+    </view>
+    <view class="form-preview__bd" wx:if="{{pay_status === 0}}">
+      <view class="form-preview__item">
+        <text class="form-preview__label">总价</text>
+        <view class="form-preview__value">
+          <text class="form-preview__price">¥{{total_money/100}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="form-preview__bd" wx:else>
+      <view class="form-preview__item">
+        <text class="form-preview__label"></text>
+        <view class="form-preview__value">
+          实付款
+          <text class="form-preview__price">¥{{total_money/100}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="form-preview__bd" wx:if="{{demand && demand.redeem_code}}">
+      <view class="form-preview__item">
+        <text class="form-preview__label">兑换码</text>
+        <view class="form-preview__value">{{demand && demand.redeem_code}}</view>
+      </view>
+    </view>
+  </view>
+</template>

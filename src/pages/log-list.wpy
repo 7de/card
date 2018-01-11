@@ -1,0 +1,126 @@
+<style lang="scss">
+</style>
+
+<template>
+  <form class="body" report-submit="{{true}}" bindsubmit="bindFormSubmit">
+    <scroll-view scroll-y="{{true}}" bindscrolltolower="bindScrollLower" style="height:{{windowHeight}}px">
+      <view class="panel panel_time-line" wx:if="{{items.length > 0}}">
+        <repeat for="{{items}}">
+          <view class="panel__bd">
+            <view class="media-box media-box_text">
+              <view class="media-box__content">{{item['content']}}</view>
+              <view class="media-box__address" wx:if="{{item['address']}}"><i class="iconfont icon-address"></i> {{item['address']}}</view>
+              <view class="media-box__info">
+                <repeat for="{{item['images']}}" item="image">
+                  <button class="media-box__info__photo" type="inherit" data-type="previewImage" data-value="{{image}}" data-urls="{{item['images']}}" formType="submit">
+                    <image mode="aspectFill" src="{{image}}" />
+                  </button>
+                </repeat>
+              </view>
+              <view class="media-box__info">
+                <view class="media-box__info__meta">{{item['created_at']}}</view>
+                <view class="media-box__info__last"><i class="iconfont icon-tel"></i> {{recordType[item['record_type']]}}</view>
+              </view>
+            </view>
+          </view>
+        </repeat>
+      </view>
+      <!-- 空白 -->
+      <view class="page-error" wx:elif="{{!searchLoading && searchLoadingComplete}}">
+        <image class="page-error__image" src="../images/list_error.png" style="width: 291rpx;height: 170rpx"></image>
+        <view class="loadmore">
+          <text class="loadmore__tips">暂无名片</text>
+        </view>
+      </view>
+      <!-- 加载 -->
+      <view class="loadmore" wx:if="{{searchLoading}}">
+        <i class="icon-loading"></i>
+        <text class="loadmore__tips">正在加载</text>
+      </view>
+      <view class="loadmore loadmore_line" wx:if="{{searchLoadingComplete && params.page > 2}}">
+        <text class="loadmore__tips">已经是全部了</text>
+      </view>
+    </scroll-view>
+    <movable-area class="fix-area">
+      <movable-view class="fix-area__btn " y="{{windowHeight - 100}}" out-of-bounds="{{false}}" direction="vertical">
+        <button type="primary" data-url="log-create?id={{id}}" formType="submit">
+          <i class="iconfont icon-plus-circle-o"></i> 添加记录
+        </button>
+      </movable-view>
+    </movable-area>
+  </form>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import moment from 'moment'
+  export default class LogList extends wepy.page {
+    config = {
+      navigationBarTitleText: ''
+    }
+
+    mixins = [ConfigMixin]
+
+    data = {
+      id: 0,
+      recordType: ['拜访客户', '客户来访', '电话会议', '邮件', '其他'],
+      items: [],
+      params: {
+        page: 1
+      },
+      searchKeyword: '', // 搜索关键字
+      searchLoading: false, // 上拉加载更多
+      searchLoadingComplete: false // 加载完毕
+    }
+
+    methods = {
+      // 滚动到底部触发事件
+      bindScrollLower(e) {
+        if (this.searchLoadingComplete || this.searchLoading) {
+          return
+        }
+        let page = this.params.page || 1
+        this.fetchSearchList({page: ++page})
+      }
+    }
+
+    onLoad(options) {
+      const { id } = options
+      this.id = id
+    }
+
+    onShow() {
+      const { id } = this.data
+      this.fetchSearchList(id)
+    }
+
+    fetchSearchList(id) {
+      this.searchLoading = true
+      Promise.all([
+        this.$parent.get(`/card/${id}`),
+        this.$parent.get(`/card-record/list/${id}`)
+      ]).then(res => {
+        const [ userInfo, recordInfo ] = res
+        if (userInfo.code === 0 && recordInfo.code === 0) {
+          wepy.setNavigationBarTitle({ title: userInfo.data.card.name })
+          let items = recordInfo.data.items
+          items.forEach((item, index, arr) => {
+            let images = item['images'].split('|')
+            images.forEach((image, i, imageArr) => {
+              imageArr[i] = this.host + image
+            })
+            arr[index]['images'] = images
+            arr[index]['created_at'] = moment(item['created_at'] * 1000).format('YYYY年MM月DD日 HH:mm')
+          })
+          setTimeout(() => {
+            this.items.push(...items)
+            this.searchLoadingComplete = (this.params.page >= recordInfo.data['_meta']['pageCount'])
+            this.searchLoading = false
+            this.$apply()
+          }, 200)
+        }
+      })
+    }
+  }
+</script>

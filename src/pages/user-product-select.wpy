@@ -1,0 +1,26 @@
+<style lang="scss">
+</style>
+
+<template>
+  <view class="body">
+    <view class="cells">
+      <navigator class="cell cell_access" url="user-product-card?type=1">
+        <view class="cell__bd">纸质名片变电子名片</view>
+        <view class="cell__ft">查看</view>
+      </navigator>
+      <navigator class="cell cell_access" url="user-product-card?type=2">
+        <view class="cell__bd">您提需求，我们设计</view>
+        <view class="cell__ft">查看</view>
+      </navigator>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  export default class UserProductSelect extends wepy.page {
+    config = {
+      navigationBarTitleText: '模版定制'
+    }
+  }
+</script>

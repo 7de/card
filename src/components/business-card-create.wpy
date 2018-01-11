@@ -1,0 +1,128 @@
+<style lang="scss">
+</style>
+
+<template>
+  <form bindsubmit="formSubmit" bindreset="formReset">
+    <view class="cells cells_form">
+      <view class="form-cell">
+        <view class="form-cell__hd">姓名<text class="text-required"></text></view>
+        <view class="form-cell__bd">
+          <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('name')" name="name" placeholder="请输入名字" maxlength="9" value="{{dCard.name}}"/>
+        </view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">电话<text class="text-required"></text></view>
+        <view class="form-cell__bd">
+          <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('mobile')" name="mobile" placeholder="请输入电话号码" maxlength="15" value="{{dCard.mobile}}"/>
+        </view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">公司<text class="text-required"></text></view>
+        <view class="form-cell__bd">
+          <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('company')" name="company" placeholder="请输入公司名称" maxlength="20" value="{{dCard.company}}"/>
+        </view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">职务<text class="text-required"></text></view>
+        <view class="form-cell__bd">
+          <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('position')" name="position" placeholder="请输入职务" maxlength="15" value="{{dCard.position}}"/>
+        </view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">微信号</view>
+        <view class="form-cell__bd">
+          <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('wechat_id')" name="wechat_id" placeholder="请输入微信号" maxlength="15" value="{{dCard.wechat_id}}"/>
+        </view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">邮箱</view>
+        <view class="form-cell__bd">
+          <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('email')" name="email" placeholder="请输入邮箱" value="{{dCard.email}}" maxlength="25"/>
+        </view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">地址</view>
+        <view class="form-cell__bd">
+          <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('address')" name="address" placeholder="请输入地址" maxlength="30" value="{{dCard.address}}"/>
+        </view>
+      </view>
+    </view>
+    <view class="btn-area">
+      <button type="primary" formType="submit">保存到名片夹</button>
+    </view>
+  </form>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class BusinessCardCreateComponent extends wepy.component {
+    props = {
+      dCard: {
+        type: Object,
+        twoWay: true
+      }
+    }
+    data = {
+      status: 0 // 0: 默认状态，1: 上传中
+    }
+    components = {
+    }
+    methods = {
+      bindKeyInput(k, e) {
+        this.dCard[k] = e.detail.value
+      },
+      formSubmit(e) {
+        if (this.status === 1) {
+          return false
+        }
+        this.status = 1
+        wepy.showLoading({ mask: true })
+        this.draw().then(cardImage => {
+          this.dCard['card_image'] = cardImage
+          const APP = this.$parent.$parent
+          const URL = '/cards'
+          APP.post(URL, this.dCard).then(res => {
+            const {code, message} = res
+            if (code === 0) {
+              wepy.showToast({
+                title: '添加成功',
+                icon: 'success'
+              })
+              wepy.navigateBack()
+            } else {
+              wepy.showToast({
+                title: message,
+                icon: 'loading'
+              })
+              this.status = 0
+            }
+          })
+        })
+      }
+    }
+    draw() {
+      const APP = this.$parent.$parent
+      return new Promise((resolve, reject) => {
+        if (this.dCard['card_type'] === 0) {
+          wepy.canvasToTempFilePath({
+            canvasId: 'businessCardCanvas',
+            success: res => {
+              const {
+                tempFilePath
+              } = res
+              APP.uploadFile(tempFilePath).then(
+                filePath => {
+                  resolve(filePath)
+                },
+                errmsg => reject(errmsg)
+              )
+            }
+          })
+        } else {
+          resolve(this.dCard['card_image'])
+        }
+      })
+    }
+  }
+</script>

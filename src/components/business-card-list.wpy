@@ -1,0 +1,100 @@
+<style lang="scss">
+  $borderColor: #eeeeee;
+  $borderActiveColor: #15d6ba;
+  .business-card-list {
+    margin-bottom: 20rpx;
+    padding: 20rpx 30rpx;
+    background-color: #ffffff;
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    box-sizing:border-box;
+    &__item {
+      display: inline-block;
+      width: 176rpx;
+      height: 105rpx;
+      text-align: center;
+      background-color: #ffffff;
+      box-sizing: border-box;
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+      &::after {
+        content: " ";
+        width: 200%;
+        height: 200%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border: 5px solid $borderColor;
+        -webkit-transform: scale(0.5);
+        transform: scale(0.5);
+        -webkit-transform-origin: 0 0;
+        transform-origin: 0 0;
+        box-sizing: border-box;
+        border-radius: 10px;
+      }
+      image {
+        width: 100%;
+        height: 100%;
+      }
+      & ~.business-card-list__item {
+        margin-left: 20rpx;
+      }
+      &_active {
+        &::after {
+          border-color: $borderActiveColor;
+        }
+      }
+    }
+  }
+</style>
+
+<template>
+  <view class="business-card-list">
+    <navigator class="business-card-list__item" url="user-product-card" style="box-shadow: 0 4rpx 8rpx #999999;">
+      <image mode="aspectFit" src="../images/icon_paper-card.png" style="width:70rpx;" />
+    </navigator>
+    <repeat for="{{cards}}">
+      <view class="business-card-list__item{{value === item.id? ' business-card-list__item_active': ''}}" @tap="change({{item.id}})">
+        <image mode="scaleToFill" src="{{item.image}}" wx:if="{{item.image}}" />
+      </view>
+    </repeat>
+  </view>
+  <input class="hide" type="text" name="{{name}}" value="{{value}}" />
+</template>
+
+<script>
+import wepy from 'wepy'
+
+export default class BusinessCardListComponent extends wepy.component {
+  props = {
+    name: String,
+    value: {
+      type: [Number, String],
+      default: 0
+    },
+    cards: Array
+  }
+  data = { }
+  methods = {
+    change(idx, evt) {
+      this.value = +idx
+    }
+  }
+  watch = {
+    value (curVal, oldVal) {
+      let data = {}
+      this.cards.forEach(el => {
+        if (curVal === el.id) {
+          data = el
+        }
+      })
+      this.$emit('onChange', data)
+    }
+  }
+  onLoad() {
+    this.$emit('onChange', this.cards[this.value])
+  }
+}
+</script>

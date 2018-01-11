@@ -1,0 +1,224 @@
+<style lang="scss">
+  .body {
+    width: 750rpx;
+  }
+  .body>image {
+    width: 750rpx;
+    height: 360rpx;
+  }
+  .radio-group {
+    overflow: hidden;
+    padding-top: 20rpx;
+    padding-left: 20rpx;
+    &__item {
+      padding-bottom: 20rpx;
+      padding-right: 20rpx;
+      float: left;
+      width: 25%;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+      radio {
+        position: absolute;
+        left: -9999em;
+      }
+    }
+    &__box {
+      display: block;
+      background-color: #ffffff;
+      border: 1px solid transparent;
+      color: #333333;
+      font-size: 28rpx;
+      line-height: 86rpx;
+      text-align: center;
+      &_checked {
+        border-color: #1875f0;
+        color: #1875f0;
+      }
+    }
+  }
+</style>
+
+<template>
+  <view class="body">
+    <form report-submit="{{true}}" bindsubmit="bindFormSubmit" bindreset="formReset">
+
+      <view class="cells">
+        <view class="form-cell cell_access">
+          <view class="form-cell__hd">类型<text class="text-required"></text></view>
+          <view class="form-cell__bd">
+            <picker bindchange="bindPickerChange" range="{{typeArray}}" class="form-cell__ctrl" type="text" name="info_type" value="{{typeValue}}">
+              <view class="text-gray" wx:if="{{typeValue === ''}}">请选择商机类别</view>
+              <view wx:else>{{typeArray[typeValue]}}</view>
+            </picker>
+          </view>
+          <view class="cell__ft"></view>
+        </view>
+      </view>
+
+      <view class="cells">
+        <view class="form-cell">
+          <view class="form-cell__bd">
+            <input class="form-cell__ctrl" type="text" name="title" data-name="title" value="{{title}}" placeholder="商机标题：请输入0~15个字符" maxlength="15" />
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__bd">
+            <textarea class="form-cell__ctrl" name="content" data-name="content" value="{{content}}" placeholder="商机详情：150字以内" maxlength="150"></textarea>
+          </view>
+        </view>
+        <uploader name="images" count="6" />
+      </view>
+
+      <view class="cells">
+        <view class="form-cell">
+          <view class="form-cell__hd">联系人</view>
+          <view class="form-cell__bd">
+            <input class="form-cell__ctrl" type="text" name="poster_name" data-name="poster_name" value="{{poster_name}}" placeholder="请输入名字" maxlength="11" />
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">联系电话</view>
+          <view class="form-cell__bd">
+            <input class="form-cell__ctrl" type="number" name="poster_phone" data-name="poster_phone" value="{{poster_phone}}" placeholder="请输入电话号码" maxlength="11" />
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">公司名称</view>
+          <view class="form-cell__bd">
+            <input class="form-cell__ctrl" type="text" name="poster_company" data-name="poster_company" value="{{poster_company}}" placeholder="请输入公司名称" maxlength="11" />
+          </view>
+        </view>
+      </view>
+
+      <view class="cells__title">
+        发布期限<text class="text-required"></text>
+      </view>
+      <radio-group class="radio-group" name="duration" bindchange="bindRadioChange">
+        <repeat for="{{durationArray}}">
+          <label class="radio-group__item">
+            <radio value="{{item.value}}" checked="{{item.checked}}"></radio>
+            <view class="radio-group__box{{item.checked?' radio-group__box_checked':''}}">{{item.label}}</view>
+          </label>
+        </repeat>
+      </radio-group>
+
+      <view class="btn-area">
+        <button type="primary" formType="submit">立即订制</button>
+      </view>
+    </form>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import UploaderComponent from '@Components/uploader'
+  export default class UserProductNews extends wepy.page {
+    config = {
+      navigationBarTitleText: '发布商机'
+    }
+    mixins = [ConfigMixin]
+    components = {
+      uploader: UploaderComponent
+    }
+    data = {
+      typeArray: ['微商', '金融', '科技', '商务合作', '招商投资', '其他'],
+      typeValue: '',
+      durationArray: [
+        {label: '24小时', value: 0, checked: true},
+        {label: '1个月', value: 1, checked: false},
+        {label: '3个月', value: 2, checked: false},
+        {label: '6个月', value: 3, checked: false}
+      ]
+    }
+    methods = {
+      bindPickerChange(e) {
+        const { value } = e.detail
+        this.typeValue = +value
+      },
+      bindRadioChange(e) {
+        const { value } = e.detail
+        this.durationArray.forEach(item => {
+          item.checked = !!(item.value === parseInt(value))
+        })
+      },
+      bindFormSubmit(e) {
+        const { value } = e.detail
+        const params = Object.assign({}, value)
+        if (this.validate(params) === false) {
+          return false
+        }
+        const URL = '/order/post-info'
+        this.$parent.post(URL, params).then(res => {
+          console.log(res)
+          const { code, data, message } = res
+          if (code === 0) {
+            wepy.navigateTo({url: `more-order-detail?id=${data.id}`})
+          } else {
+            wepy.showModal({
+              title: '温馨提示',
+              content: message,
+              showCancel: false,
+              confirmColor: '#1875f0'
+            })
+          }
+        })
+      },
+      formReset(e) {
+        wepy.navigateTo({url: 'more-order-list'})
+      }
+    }
+    onLoad(options) {
+      const { type } = options
+      this.typeValue = type || ''
+    }
+    // 简易表单验证 -- 需优化
+    validate(data) {
+      let message = ''
+      for (let k in data) {
+        if (data[k] === '') {
+          switch (k) {
+            case 'title':
+              message = '商机标题不能为空'
+              break
+            case 'poster_name':
+              message = '联系人不能为空'
+              break
+            case 'poster_phone':
+              message = '联系人电话不能为空'
+              break
+            case 'poster_company':
+              message = '公司名称不能为空'
+              break
+            case 'content':
+              message = '商机详情不能为空'
+              break
+            case 'info_type':
+              message = '请选择商机类别'
+              break
+            case 'images':
+              message = '请上传图片'
+              break
+          }
+        }
+      }
+
+      if (message === '') {
+        if (/^1[3|4|5|7|8]\d{9}$/.test(data['poster_phone']) === false) {
+          message = '请输入正确手机号码'
+        }
+      }
+
+      if (message !== '') {
+        wepy.showModal({
+          title: '温馨提示',
+          content: message,
+          showCancel: false,
+          confirmColor: '#1875f0'
+        })
+      }
+      return !message
+    }
+  }
+</script>

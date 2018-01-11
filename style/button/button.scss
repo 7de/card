@@ -1,0 +1,59 @@
+.btn-cell {
+  margin: 40rpx 30rpx;
+  display: flex;
+  align-items: center;
+  button {
+    margin-right: 30rpx;
+    flex: 1;
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+
+.btn-area {
+  margin: 40rpx 30rpx;
+  display: block;
+  button {
+    margin-bottom: 30rpx;
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.fix-area {
+  position: fixed;
+  z-index: 100;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  height: 100%;
+  .fix-area__btn {
+    margin-left: -190rpx;
+    min-width: 190rpx;
+    height: auto;
+    white-space: nowrap;
+    box-sizing: border-box;
+    >button {
+      padding: 20rpx;
+      font-size: 26rpx;
+      line-height: 1em;
+      border-radius: 66rpx 0 0 66rpx;
+      .iconfont {
+        color: inherit;
+      }
+    }
+  }
+}
+
+button.round {
+  &::after {
+    border-radius: 999999em;
+  }
+}
+
+@import './button[type=default].scss';
+@import './button[type=primary].scss';
+@import './button[type=inherit].scss';

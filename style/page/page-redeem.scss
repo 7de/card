@@ -1,0 +1,108 @@
+.page-redeem {
+  padding: 40rpx;
+  background-color: #ffffff;
+  &__icon {
+    display: inline-block;
+    width: 50rpx;
+    height: 40rpx;
+  }
+  &__icon-area {
+    margin: 0 auto;
+    padding: 32rpx 0 30rpx;
+    display: block;
+    width: 102rpx;
+    height: 102rpx;
+    text-align: center;
+    background-color: #e6e6e6;
+    border-radius: 100rpx;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  &__rich-text {
+    margin: 30rpx auto;
+  }
+  &__form {
+    display: block;
+    margin-top: 30rpx;
+    position: relative;
+    &::before {
+      content: " ";
+      display: table;
+    }
+    &::after {
+      content: " ";
+      position: absolute;
+      z-index: 2;
+      left: 0;
+      top: 0;
+      right: 0;
+      height: 1px;
+      border-top: 1px dashed #e5e5e5;
+      color: #e5e5e5;
+      -webkit-transform-origin: 0 0;
+      transform-origin: 0 0;
+      -webkit-transform: scaleY(0.5);
+      transform: scaleY(0.5);
+    }
+    &__group {
+      margin: 40rpx 70rpx;
+      line-height: 74rpx;
+      overflow: hidden;
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+    &__label {
+      margin-right: .5em;
+      float: left;
+      width: 3em;
+    }
+    &__value {
+      display: block;
+      overflow: hidden;
+      word-break: normal;
+      word-wrap: break-word;
+    }
+    &__ctrl {
+      padding-left: 20rpx;
+      padding-right: 20rpx;
+      font-size: 28rpx;
+      height: 74rpx;
+      box-sizing: border-box;
+      position: relative;
+      &::after {
+        content: " ";
+        width: 200%;
+        height: 200%;
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        left: 0;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        -webkit-transform: scale(0.5);
+        transform: scale(0.5);
+        -webkit-transform-origin: 0 0;
+        transform-origin: 0 0;
+        box-sizing: border-box;
+      }
+    }
+    &__btn-area {
+      display: flex;
+      white-space: nowrap;
+      button+button {
+        margin-left: 40rpx;
+      }
+      button[size="mini"] {
+        font-size: 26rpx;
+        line-height: 74rpx;
+      }
+      button[type="default"] {
+        flex: 1;
+      }
+    }
+  }
+  .ul {
+    font-size: 28rpx;
+  }
+}

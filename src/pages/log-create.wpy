@@ -1,0 +1,97 @@
+<style lang="scss">
+</style>
+
+<template>
+  <form class="body" report-submit="{{true}}" bindsubmit="bindFormSubmit">
+    <input class="hide" name="card_id" value="{{id}}" />
+    <view class="cells">
+      <view class="form-cell cell_access">
+        <view class="form-cell__hd">类型</view>
+        <view class="form-cell__bd">
+          <picker class="form-cell__ctrl" name="record_type" range="{{recordType}}" bindchange="bindPickerChange">
+            <view class="text-right" wx:if="{{recordText}}">{{recordText}}</view>
+            <view class="cell__ft" wx:else="{{recordText}}">请选择</view>
+          </picker>
+        </view>
+      </view>
+    </view>
+    <view class="cells">
+      <view class="form-cell">
+        <view class="form-cell__bd">
+          <textarea class="form-cell__ctrl" name="content" maxlength="150" placeholder="请输入商谈内容"></textarea>
+        </view>
+      </view>
+      <uploader name="images" count="3"></uploader>
+      <view class="cell cell_access" @tap="getLocation">
+        <view class="cell__hd"><i class="iconfont icon-address"></i></view>
+        <view class="cell__bd"><input type="text" name="address" disabled="{{true}}" value="{{address}}" placeholder="所在位置" /></view>
+        <view class="cell__ft"></view>
+      </view>
+    </view>
+    <view class="btn-area">
+      <button type="primary" formType="submit">保存</button>
+    </view>
+  </form>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import UploaderComponent from '@Components/uploader'
+  export default class LogList extends wepy.page {
+    config = {
+      navigationBarTitleText: '添加商谈记录'
+    }
+
+    mixins = [ConfigMixin]
+
+    components = {
+      uploader: UploaderComponent
+    }
+
+    data = {
+      id: 0,
+      recordType: ['拜访客户', '客户来访', '电话会议', '邮件', '其他'],
+      recordText: '',
+      address: ''
+    }
+
+    methods = {
+      bindPickerChange(e) {
+        const { value } = e.detail
+        this.recordText = this.recordType[value]
+      },
+      getLocation() {
+        wepy.chooseLocation({
+          success: res => {
+            console.log(res)
+            const { address } = res
+            this.address = address
+            this.$apply()
+          }
+        })
+      },
+      bindFormSubmit(e) {
+        const { value } = e.detail
+        const URL = `/card-records`
+        wepy.showLoading({ mask: true })
+        this.$parent.post(URL, value).then(res => {
+          const { message } = res
+          wepy.hideLoading()
+          wepy.showModal({
+            title: '温馨提示',
+            content: message,
+            showCancel: false,
+            confirmColor: '#1875f0',
+            success: () => wepy.navigateBack()
+          })
+        })
+      }
+    }
+
+    onLoad(options) {
+      const { id } = options
+      this.id = id
+    }
+  }
+</script>

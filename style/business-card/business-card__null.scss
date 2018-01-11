@@ -1,0 +1,21 @@
+.business-card__null {
+  width: 100%;
+  height: 100%;
+  font-size: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  &::before {
+    content: " ";
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+  }
+  &__content {
+    display: inline-block;
+    width: 100%;
+    vertical-align: middle;
+    font-size: 17rpx;
+    text-align: center;
+    line-height: 1.25;
+  }
+}

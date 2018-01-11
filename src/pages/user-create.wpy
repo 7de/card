@@ -1,0 +1,357 @@
+<style lang="scss">
+  .user-create {
+    display: block;
+    position: relative;
+    &__card {
+      width: 100%;
+      height: 450rpx;
+      font-size: 0;
+      text-align: center;
+      overflow: hidden;
+      &::before {
+        content: " ";
+        display: inline-block;
+        height: 100%;
+        vertical-align: middle;
+      }
+      .business-card {
+        margin: 0;
+        display: inline-block;
+        text-align: left;
+        vertical-align: middle;
+      }
+    }
+    &,
+    &__form {
+      &::before,
+      &::after {
+        content: " ";
+        display: table;
+        overflow: hidden;
+      }
+    }
+  }
+  .video-area {
+    margin-bottom: 20rpx;
+    text-align: center;
+    video {
+      width: 600rpx;
+      height: 360rpx;
+    }
+  }
+  .upload-image__btn {
+    margin: -18rpx -30rpx;
+  }
+</style>
+
+<template>
+  <form class="user-create" report-submit="{{true}}" bindsubmit="bindFormSubmit" bindreset="formReset">
+    <view class="user-create__card">
+      <card :info.sync="dCard">
+        <view class="business-card__video" slot="video" @tap="play" wx:if="{{dCard.video_url}}">
+          <view class="business-card__null">
+            <view class="business-card__null__content">
+              <i class="iconfont icon-play"></i>
+            </view>
+          </view>
+        </view>
+      </card>
+    </view>
+    <card-list :cards.sync="cards" name="template_id" :value.sync="currentCard" @onChange.user="bgUpdate" />
+    <view class="cells">
+      <view class="form-cell">
+        <view class="form-cell__hd">姓名<text class="text-required"></text></view>
+        <view class="form-cell__bd">
+          <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('name')" name="name" placeholder="请输入名字" value="{{userInfo.name}}" maxlength="9" />
+        </view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">电话<text class="text-required"></text></view>
+        <view class="form-cell__bd">
+          <input type="number" class="form-cell__ctrl" bindinput="bindKeyInput('mobile')" name="mobile" placeholder="请输入电话号码" value="{{userInfo.mobile}}" maxlength="15" />
+        </view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">公司<text class="text-required"></text></view>
+        <view class="form-cell__bd">
+          <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('company')" name="company" placeholder="请输入公司名称" value="{{userInfo.company}}" maxlength="20" />
+        </view>
+      </view>
+      <view class="form-cell cell_access">
+        <view class="form-cell__hd">行业<text class="text-required"></text></view>
+        <view class="form-cell__bd">
+          <picker bindchange="pickerChange('industry_category')" range="{{IndustryCategory}}" class="form-cell__ctrl" type="text" name="industry_category" value="{{userInfo.industry_category}}">
+            <view wx:if="{{dCard.industry_category === undefined}}" class="text-gray">请选择行业类别</view>
+            <view wx:else>{{IndustryCategory[dCard.industry_category]}}</view>
+          </picker>
+        </view>
+        <view class="cell__ft"></view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">职位<text class="text-required"></text></view>
+        <view class="form-cell__bd">
+          <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('position')" name="position" placeholder="请输入职位" value="{{userInfo.position}}" maxlength="15" />
+        </view>
+      </view>
+      <view class="form-cell cell_access">
+        <view class="form-cell__hd">职务<text class="text-required"></text></view>
+        <view class="form-cell__bd">
+          <picker bindchange="pickerChange('position_type')" range="{{PositionType}}" class="form-cell__ctrl" type="text" name="position_type" value="{{dCard.position_type}}">
+            <view class="text-gray" wx:if="{{dCard.position_type === undefined}}">请选择职务</view>
+            <view wx:else>{{PositionType[dCard.position_type]}}</view>
+          </picker>
+        </view>
+        <view class="cell__ft"></view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">微信号</view>
+        <view class="form-cell__bd">
+          <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('wechat_id')" name="wechat_id" placeholder="请输入微信号" value="{{userInfo.wechat_id}}" maxlength="15" />
+        </view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">邮箱</view>
+        <view class="form-cell__bd">
+          <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('email')" name="email" placeholder="请输入邮箱" value="{{userInfo.email}}" maxlength="25" />
+        </view>
+      </view>
+      <view class="form-cell cell_access">
+        <view class="form-cell__hd">所在地区</view>
+        <view class="form-cell__bd">
+          <picker mode="region" bindchange="bindRegionChange" class="form-cell__ctrl" value="{{region}}">
+            <view class="text-gray" wx:if="{{!region[0] || !region[1] || !region[2]}}">请选择省市区</view>
+            <view class="text-nowrap" wx:else>{{region[0]}}、{{region[1]}}、{{region[2]}}</view>
+          </picker>
+        </view>
+        <view class="cell__ft"></view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">地址</view>
+        <view class="form-cell__bd">
+          <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('address')" name="address" placeholder="详细地址" value="{{userInfo.address}}" maxlength="30" />
+        </view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">视频</view>
+        <view class="form-cell__bd">
+          <text class="form-cell__ctrl text-gray">请上传20M以内的视频</text>
+        </view>
+        <view class="form-cell__ft">
+          <text class="text-primary form-cell__ctrl iconfont icon-remove" @tap="removeVideo()" wx:if="{{dCard.video_url}}">删除视频</text>
+          <text class="text-primary form-cell__ctrl iconfont icon-add" @tap="addVideo()" wx:else>添加视频</text>
+        </view>
+      </view>
+      <view class="video-area" wx:if="{{dCard.video_url}}">
+        <video src="{{host}}{{dCard.video_url}}"></video>
+        <input class="hide" type="text" name="video_url" value="{{dCard.video_url}}" />
+      </view>
+    </view>
+    <view class="cells__title">
+      图片
+      <text>(建议上传个人照片或公司照片,最多三张)</text>
+    </view>
+    <view class="panel">
+      <view class="panel__bd">
+        <uploader name="image" :value.sync="image" count="3" />
+      </view>
+    </view>
+    <view class="cells__title">
+      介绍
+      <text>(建议填写个人简介或公司介绍)</text>
+    </view>
+    <view class="cells">
+      <view class="form-cell">
+        <view class="form-cell__bd">
+          <textarea class="form-cell__ctrl" name="introduction" value="{{dCard.introduction}}" maxlength="150" placeholder="最多150个字"></textarea>
+        </view>
+      </view>
+    </view>
+    <view class="cells">
+      <view class="form-cell form-cell_switch">
+        <view class="form-cell__bd">是否公开您的名片信息？</view>
+        <view class="form-cell__ft">
+          <switch checked="{{!!dCard.public}}" bindchange="bindswitchChange" color="#1875f0" />
+        </view>
+      </view>
+    </view>
+    <view class="btn-area">
+      <button type="primary" formType="submit">保存</button>
+      <button type="default" formType="reset">取消</button>
+    </view>
+  </form>
+  <video-player :isShow.sync="isShow"></video-player>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import RestructureMixin from '../mixins/restructure'
+  import VideoPlayerComponent from '@Components/video-player'
+  import UploaderComponent from '@Components/uploader'
+  import CardComponent from '@Components/business-card'
+  import CardListComponent from '@Components/business-card-list'
+  export default class UserCreate extends wepy.page {
+    config = {
+      navigationBarTitleText: '创建我的名片'
+    }
+    mixins = [RestructureMixin, ConfigMixin]
+    components = {
+      'video-player': VideoPlayerComponent,
+      'card': CardComponent,
+      'card-list': CardListComponent,
+      uploader: UploaderComponent
+    }
+    data = {
+      isShow: false,
+      cards: [],
+      dCard: {},
+      userInfo: {},
+      currentCard: null,
+      IndustryCategory: ['计算机相关', '住宿、餐饮', '金融、保险 ', '教育培训', '建筑、制造', '其他'],
+      PositionType: ['董事长', '总经理', '副总经理', '总监', '经理'],
+      region: [],
+      image: ''
+    }
+    methods = {
+      play() {
+        this.$invoke('video-player', 'set', this.host + this.dCard.video_url)
+        this.$invoke('video-player', 'show')
+      },
+      bindKeyInput(k, e) {
+        this.$invoke('card', 'update', k, e.detail.value)
+      },
+      pickerChange(field, e) {
+        this.dCard[field] = e.detail.value
+        console.log(field, this.dCard[field])
+      },
+      bindRegionChange(e) {
+        this.region = e.detail.value
+        this.dCard.province_name = this.region[0]
+        this.dCard.city_name = this.region[1]
+        this.dCard.area_name = this.region[2]
+        this.$apply()
+      },
+      bindswitchChange(e) {
+        this.dCard.public = e.detail.value ? 1 : 0
+      },
+      bgUpdate(data, evt) {
+        if (!data) return
+        this.$invoke('card', 'setTemplate', data)
+      },
+      bindFormSubmit(e) {
+        // 绘制名片
+        wepy.showLoading({mask: true})
+        this.draw().then(cardImage => {
+          // 提交表单
+          const PUT_URL = '/card/my-card'
+          const params = Object.assign({
+            card_type: 0,
+            logo_url: this.dCard['logo_url'],
+            province_name: this.dCard['province_name'],
+            city_name: this.dCard['city_name'],
+            area_name: this.dCard['area_name'],
+            public: this.dCard['public'],
+            card_image: cardImage
+          }, e.detail.value)
+          this.$parent.put(PUT_URL, params).then(res => {
+            let { code, data, message } = res
+            if (code === 0) {
+              // 缓存个人信息
+              wepy.setStorageSync('cardInfo', data)
+              wepy.navigateBack({delta: 1})
+            } else {
+              console.log(message)
+              wepy.showToast({
+                title: message,
+                icon: 'loading'
+              })
+            }
+          })
+        })
+      },
+      formReset(e) {
+        wepy.navigateBack({
+          delta: 1
+        })
+      },
+      addVideo() { // 视频上传
+        wepy.chooseVideo({
+          sourceType: ['album', 'camera'],
+          compressed: true,
+          maxDuration: 30,
+          camera: 'front',
+          success: res => {
+            const {
+              tempFilePath
+            } = res
+            // 上传视频
+            wepy.showLoading()
+            this.$parent.uploadFile(tempFilePath, 'video').then(videoPath => {
+              this.dCard.video_url = videoPath
+              this.$apply()
+              wepy.hideLoading()
+            },
+            errmsg => {
+              wepy.showToast({
+                title: errmsg,
+                image: '../images/icon-error.png'
+              })
+            })
+          }
+        })
+      },
+      removeVideo() {
+        this.dCard.video_url = null
+      }
+    }
+    events = {}
+    onRoute() {
+      this.getMyCard()
+    }
+    getMyCard() {
+      wepy.showLoading({
+        mask: true
+      })
+      Promise.all([
+        this.$parent.getMyTemplates(),
+        this.$parent.get('/card/my-card')
+      ]).then(res => {
+        const [cards, dCard] = res
+        this.cards = cards
+        if (dCard.code === 0) {
+          this.currentCard = dCard.data.template_id
+          Object.assign(this.dCard, dCard.data)
+          Object.assign(this.userInfo, dCard.data)
+          this.region = [
+            this.dCard.province_name || '',
+            this.dCard.city_name || '',
+            this.dCard.area_name || ''
+          ]
+          this.image = this.dCard.image
+        } else {
+          this.currentCard = 1
+        }
+        this.$apply()
+        wepy.hideLoading()
+      })
+    }
+    draw() {
+      return new Promise((resolve, reject) => {
+        wepy.canvasToTempFilePath({
+          canvasId: 'businessCardCanvas',
+          success: res => {
+            const {
+              tempFilePath
+            } = res
+            this.$parent.uploadFile(tempFilePath).then(
+              filePath => {
+                resolve(filePath)
+              },
+              errmsg => reject(errmsg)
+            )
+          }
+        })
+      })
+    }
+  }
+</script>

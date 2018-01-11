@@ -1,0 +1,376 @@
+<style lang="scss">
+  page {
+    overflow: hidden
+  }
+  .form-cell__ctrl {
+    .form-cell__bd & {
+      text-align: right;
+    }
+    .form-cell__ft & {
+      display: inline-block;
+      width: 80rpx;
+      vertical-align: middle;
+    }
+  }
+  slider {
+    margin: 10rpx;
+  }
+</style>
+
+<template>
+  <card-editor :toggle.sync="toggle" :image.sync="image" :code.sync="code" :width.sync="cWidth" :height.sync="cheight" />
+  <scroll-view scroll-y="{{true}}" scroll-into-view="{{offsetView}}" style="height:{{windowHeight}}px;">
+    <view class="line-height-0">.</view>
+    <!-- 背景 -->
+    <view class="cells cells_form" id="image">
+      <view class="cell cell_collapse{{toggle === 'image' ? ' cell_collapse_show' : ''}}" data-toggle="image" @tap="setToggle">
+        <view class="cell__hd">背景</view>
+        <view class="cell__bd"></view>
+        <view class="cell__ft"></view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__bd">
+          <upload-image :value.sync="image" />
+        </view>
+      </view>
+    </view>
+    <!-- Logo && Video -->
+    <repeat for="{{['logo', 'video']}}">
+      <view class="cells cells_form" id="{{item}}">
+        <view class="cell cell_collapse{{toggle === item ? ' cell_collapse_show' : ''}}" data-toggle="{{item}}" @tap="setToggle">
+          <view class="cell__hd">{{codeMap[item].label}}</view>
+          <view class="cell__bd"></view>
+          <view class="cell__ft"></view>
+        </view>
+        <view class="form-cell form-cell_switch">
+          <view class="form-cell__bd">显示</view>
+          <view class="form-cell__ft">
+            <switch checked="{{code[item].display === 'block'}}" data-field="{{item}}" bindchange="bindSwitchChange" color="#1875f0" />
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">left</view>
+          <view class="form-cell__bd"></view>
+          <view class="form-cell__ft">
+            <input class="form-cell__ctrl" type="number" value="{{code[item]['left']}}" data-field="{{item}}" data-key="left" bindblur="keyInput" placeholder="0" /> px
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">top</view>
+          <view class="form-cell__bd"></view>
+          <view class="form-cell__ft">
+            <input class="form-cell__ctrl" type="number" value="{{code[item]['top']}}" data-field="{{item}}" data-key="top" bindblur="keyInput" placeholder="0" /> px
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">宽度</view>
+          <view class="form-cell__bd">
+            <slider min="10" max="{{cWidth}}" value="{{code[item]['width']}}" data-field="{{item}}" data-key="width" bindchange="keyInput" />
+          </view>
+          <view class="form-cell__ft">
+            <input class="form-cell__ctrl" type="number" value="{{code[item]['width']}}" data-field="{{item}}" data-key="width" bindblur="keyInput" placeholder="10" /> px
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">高度</view>
+          <view class="form-cell__bd">
+            <slider min="10" max="{{cHeight}}" value="{{code[item]['height']}}" data-field="{{item}}" data-key="height" bindchange="keyInput" />
+          </view>
+          <view class="form-cell__ft">
+            <input class="form-cell__ctrl" type="number" value="{{code[item]['height']}}" data-field="{{item}}" data-key="height" bindblur="keyInput" placeholder="10" /> px
+          </view>
+        </view>
+      </view>
+    </repeat>
+    <!-- 文本 -->
+    <repeat for="{{['name', 'job', 'tel', 'company', 'address', 'email']}}">
+      <view class="cells cells_form" id="{{item}}">
+        <view class="cell cell_collapse{{toggle === item ? ' cell_collapse_show' : ''}}">
+          <view class="cell__hd">{{codeMap[item].label}}</view>
+          <view class="cell__bd">
+            <input class="form-cell__ctrl" type="text" value="{{code[item]['value']}}" data-field="{{item}}" data-key="value" bindblur="keyInput" />
+          </view>
+          <view class="cell__ft" data-toggle="{{item}}" @tap="setToggle"></view>
+        </view>
+        <view class="form-cell form-cell_switch">
+          <view class="form-cell__bd">显示</view>
+          <view class="form-cell__ft">
+            <switch checked="{{code[item].display === 'block'}}" data-field="{{item}}" bindchange="bindSwitchChange" color="#1875f0" />
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">left</view>
+          <view class="form-cell__bd"></view>
+          <view class="form-cell__ft">
+            <input class="form-cell__ctrl" type="number" value="{{code[item]['left']}}" data-field="{{item}}" data-key="left" bindblur="keyInput" placeholder="0" /> px
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">top</view>
+          <view class="form-cell__bd"></view>
+          <view class="form-cell__ft">
+            <input class="form-cell__ctrl" type="number" value="{{code[item]['top']}}" data-field="{{item}}" data-key="top" bindblur="keyInput" placeholder="0" /> px
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">宽度</view>
+          <view class="form-cell__bd">
+            <slider min="10" max="{{cWidth}}" value="{{code[item]['width']}}" data-field="{{item}}" data-key="width" bindchange="keyInput" />
+          </view>
+          <view class="form-cell__ft">
+            <input class="form-cell__ctrl" type="number" value="{{code[item]['width']}}" data-field="{{item}}" data-key="width" bindblur="keyInput" placeholder="10" /> px
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">高度</view>
+          <view class="form-cell__bd">
+            <slider min="10" max="{{cHeight}}" value="{{code[item]['height']}}" data-field="{{item}}" data-key="height" bindchange="keyInput" />
+          </view>
+          <view class="form-cell__ft">
+            <input class="form-cell__ctrl" type="number" value="{{code[item]['height']}}" data-field="{{item}}" data-key="height" bindblur="keyInput" placeholder="10" /> px
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">字体大小</view>
+          <view class="form-cell__bd">
+            <slider min="9" max="64" value="{{code[item]['font-size']}}" data-field="{{item}}" data-key="font-size" bindchange="keyInput" />
+          </view>
+          <view class="form-cell__ft">
+            <input class="form-cell__ctrl" type="number" value="{{code[item]['font-size']}}" data-field="{{item}}" data-key="font-size" bindblur="keyInput" placeholder="13" /> px
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">字体颜色</view>
+          <view class="form-cell__bd">
+            <input class="form-cell__ctrl" type="text" value="{{code[item]['color']}}" data-field="{{item}}" data-key="color" bindblur="keyInput" placeholder="#595959" />
+          </view>
+          <view class="form-cell__ft"></view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">字体粗细</view>
+          <view class="form-cell__bd">
+            <slider min="100" max="600" step="100" value="{{code[item]['font-weight'] || 400}}" data-field="{{item}}" data-key="font-weight" bindchange="keyInput" />
+          </view>
+          <view class="form-cell__ft">
+            <input class="form-cell__ctrl" type="text" value="{{code[item]['font-weight']}}" data-field="{{item}}" data-key="font-weight" bindblur="keyInput" placeholder="400" />
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">对齐方式</view>
+          <view class="form-cell__bd">
+            <picker class="form-cell__ctrl" mode="selector" range="{{textAlignRange}}" data-field="{{item}}" data-key="text-align" bindchange="keyInput">
+              <view class="text-nowrap" wx:if="{{code[item]['text-align']}}">{{code[item]['text-align']}}</view>
+              <view class="text-gray" wx:else>left</view>
+            </picker>
+          </view>
+          <view class="form-cell__ft"></view>
+        </view>
+      </view>
+    </repeat>
+    <view class="btn-area">
+      <button type="primary" @tap="create">生成代码</button>
+    </view>
+  </scroll-view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import UploadImageComponent from '@Components/upload-image'
+  import CardEditorComponent from '@Components/business-card-editor'
+  export default class CardsEdit extends wepy.page {
+    config = {
+      navigationBarTitleText: '名片码合成'
+    }
+    mixins = [ConfigMixin]
+    components = {
+      'card-editor': CardEditorComponent,
+      'upload-image': UploadImageComponent
+    }
+    data = {
+      toggle: '',
+      offsetView: '',
+      textAlignRange: ['left', 'center', 'right', 'justify'],
+      touchStartX: 0,
+      touchStartY: 0,
+      image: '',
+      code: {},
+      cWidth: 345,
+      cHeight: 170,
+      codeMap: {
+        logo: {
+          label: '商标',
+          value: '../images/person.jpg'
+        },
+        video: {
+          label: '视频',
+          value: ''
+        },
+        name: {
+          label: '姓名',
+          value: '吴韡辉'
+        },
+        job: {
+          label: '职业',
+          value: 'Web前端工程师'
+        },
+        tel: {
+          label: '手机',
+          value: '15012879833'
+        },
+        company: {
+          label: '公司',
+          value: '深圳前海云端网络咨询有限公司'
+        },
+        address: {
+          label: '地址',
+          value: '广东省深圳市南山区高新园区虚拟大学R3-B栋508'
+        },
+        email: {
+          label: '邮箱',
+          value: '52500925@qq.com'
+        }
+      }
+    }
+    methods = {
+      setToggle(e) { // 折叠面板
+        this.$invoke('card-editor', 'setToggle', e)
+      },
+      bindSwitchChange(e) { // 显示隐藏
+        const {
+          field
+        } = e.currentTarget.dataset
+        this.code[field].display = e.detail.value ? 'block' : 'none'
+        let obj = this.$invoke('card-editor', 'cssToObj', this.code[field]['style'])
+        obj['display'] = this.code[field].display
+        this.code[field]['style'] = this.$invoke('card-editor', 'objToCss', obj)
+      },
+      keyInput(e) { // 样式修改
+        const {
+          field,
+          key
+        } = e.currentTarget.dataset
+        const {
+          value
+        } = e.detail
+        let obj = this.$invoke('card-editor', 'cssToObj', this.code[field]['style'])
+        switch (key) {
+          case 'left':
+          case 'top':
+            this.code[field][key] = parseFloat(value)
+            break
+          case 'value': // 防止重置XY
+            this.code[field][key] = obj['content'] = value.trim()
+            break
+          case 'text-align':
+            this.code[field][key] = obj[key] = this.textAlignRange[value]
+            break
+          case 'width': // 修正left
+            const cWidth = this.cWidth
+            let width = parseFloat(value) || 10
+            width = width < 10 ? 10 : width
+            width = width > cWidth ? cWidth : width
+            if (this.code[field].left + width > cWidth) {
+              this.code[field].left = cWidth - width
+            }
+            this.code[field][key] = obj[key] = width
+            break
+          case 'height': // 修正top
+            const cHeight = this.cHeight
+            let height = parseFloat(value) || 10
+            height = height < 10 ? 10 : height
+            height = height > cHeight ? cHeight : height
+            if (this.code[field].top + height > cHeight) {
+              this.code[field].top = cHeight - height
+            }
+            this.code[field][key] = obj[key] = height
+            break
+          case 'font-size':
+            let fontSize = parseFloat(value) || 13
+            fontSize = fontSize < 9 ? 9 : fontSize
+            fontSize = fontSize > 64 ? 64 : fontSize
+            this.code[field]['height'] = obj['height'] = this.code[field][key] = obj[key] = fontSize
+            break
+          default:
+            this.code[field][key] = obj[key] = value
+        }
+        // 重新生成style
+        this.code[field]['style'] = this.$invoke('card-editor', 'objToCss', obj)
+        this.$apply()
+      },
+      create() { // 名片代码合成
+        this.$invoke('card-editor', 'getCode')
+      }
+    }
+    watch = {
+      toggle(curVal, oldVal) {
+        setTimeout(() => {
+          this.offsetView = curVal
+          this.$apply()
+        })
+      }
+    }
+    onLoad(options) {
+      const {
+        index
+      } = options
+      if (index === undefined) {
+        for (let k in this.codeMap) {
+          this.code[k] = Object.assign({
+            left: 0,
+            top: 0,
+            width: 10,
+            height: 10,
+            style: ''
+          }, this.codeMap[k])
+        }
+      } else {
+        this.template = wx.getStorageSync('templates')[index]
+        const {
+          image,
+          code
+        } = this.getStyle(this.template)
+        for (let k in code) {
+          Object.assign(code[k], this.codeMap[k])
+        }
+        this.code = code
+        this.image = image
+      }
+    }
+    // 获取style
+    getStyle(template) {
+      let image = ''
+      let code = {}
+      for (let item in template) {
+        switch (item) {
+          case 'image':
+            image = template[item]
+            break
+          case 'id':
+            code[item] = template[item]
+            break
+          default:
+            code[item] = this.$invoke('card-editor', 'cssToObj', template[item])
+            // 将(top|right|bottom|left)提取出来
+            // ASCII表 | \55 - | \72 : | \73 ; |
+            // code[item]['style'] = template[item].replace(/(?<!\55)(top|right|bottom|left)\72\w+\73/g, '')
+            let style = template[item].replace(/(\w+\55)?(top|right|bottom|left)\72\w+\73/g, res => {
+              if (/(\w+\55)(top|right|bottom|left)/.test(res)) {
+                return res
+              } else {
+                return ''
+              }
+            })
+            // 将rpx转px
+            style = this.$invoke('card-editor', 'cssToObj', style)
+            // 重新获取style
+            code[item]['style'] = this.$invoke('card-editor', 'objToCss', style)
+        }
+      }
+      return {
+        image,
+        code
+      }
+    }
+  }
+</script>

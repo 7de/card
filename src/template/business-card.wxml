@@ -1,0 +1,42 @@
+<template name="business-card">
+  <view class="business-card{{(template)? '': ' business-card_default'}}" style="{{template && template.card}}">
+    <image class="business-card__image" src="{{template.image}}" wx:if="{{template}}"></image>
+    <!-- Logo -->
+    <view class="business-card__logo" wx:if="{{info.logo_url}}" style="{{template && template.logo}}">
+      <image class="business-card__image" src="{{host}}{{info.logo_url}}"></image>
+    </view>
+    <!-- Video -->
+    <view class="business-card__video" catchtap="play" wx:if="{{info.video_url}}" style="{{template && template.video}}">
+      <view class="business-card__null">
+        <view class="business-card__null__content">
+          <i class="iconfont icon-play"></i>
+        </view>
+      </view>
+    </view>
+    <!-- Other -->
+    <view class="business-card__name" style="{{template && template.name}}">
+      <view class="business-card__item__text">{{info.name || '我的名字'}}</view>
+    </view>
+    <view class="business-card__position" style="{{template && template.position}}">
+      <view class="business-card__item__text">{{info.position || '职务'}}</view>
+    </view>
+    <view class="business-card__company" style="{{template && template.company}}">
+      <view class="business-card__item__text">{{info.company}}</view>
+    </view>
+    <view class="business-card__mobile" style="{{template && template.mobile}}">
+      <view class="business-card__item__text">
+        <text class="text-gray">手机</text>{{info.mobile}}
+      </view>
+    </view>
+    <view class="business-card__address" style="{{template && template.address}}">
+      <view class="business-card__item__text">
+        <text class="text-gray">地址</text>{{info.address}}
+      </view>
+    </view>
+    <view class="business-card__email" style="{{template && template.email}}">
+      <view class="business-card__item__text">
+        <text class="text-gray">邮箱</text>{{info.email}}
+      </view>
+    </view>
+  </view>
+</template>

@@ -1,0 +1,76 @@
+<style lang="scss">
+  $colorDefault: #7b7b7b;
+  $colorActive: #13b113;
+  .tab {
+    display: flex;
+    color: $colorDefault;
+    font-size: 24rpx;
+    height: 98rpx;
+    white-space: nowrap;
+    border-top: 1px solid #dad9d6;
+    background-color: #ffffff;
+    position: fixed;
+    z-index:11;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    .tab__item {
+      flex: 1;
+      line-height: 1;
+      text-align: center;
+      &.tab__item_active {
+        color: $colorActive;
+      }
+      .icon {
+        margin-top: 15rpx;
+        font-size: 48rpx;
+      }
+      .title {
+        margin-top:5rpx;
+        display: block;
+        font-size: 22rpx;
+      }
+      // ~.tab__item {
+      //   border-left: 1px solid #dad9d6;
+      // }
+    }
+  }
+</style>
+
+<template>
+  <view class="tab">
+    <view wx:for="{{tabList}}" wx:key="name" class="tab__item{{active === index ? ' tab__item_active' : ''}}" @tap="change({{index}})">
+      <view class="icon">
+        <span class="iconfont {{item.icon}}"></span>
+      </view>
+      <text class="title">{{item.name}}</text>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+
+export default class TabComponent extends wepy.component {
+  props = {
+    active: {
+      type: Number,
+      twoWay: true
+    }
+  }
+  data = {
+    tabList: [
+      {id: 0, name: '我的名片', url: 'user-index', icon: 'icon-id'},
+      {id: 1, name: '名片夹', url: 'folder-index', icon: 'icon-folder'},
+      {id: 2, name: '名片库', url: 'library-index', icon: 'icon-more'},
+      {id: 2, name: '更多', url: 'more-index', icon: 'icon-more'}
+    ]
+  }
+  methods = {
+    change (idx, evt) {
+      this.active = +idx
+      wepy.redirectTo(this.tabList[idx])
+    }
+  }
+}
+</script>

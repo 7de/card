@@ -1,0 +1,55 @@
+<import src="../template/business-card.wxml"/>
+<template name="card-create">
+  <view class="body">
+    <template is="business-card" data="{{...dCard}}"/>
+    <form bindsubmit="formSubmit" bindreset="formReset">
+      <view class="form-cells">
+        <view class="form-cell">
+          <view class="form-cell__hd">姓名<text class="text-required"></text></view>
+          <view class="form-cell__bd">
+            <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('name')" name="name" placeholder="请输入名字" maxlength="9" value="{{dCard.name}}"/>
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">电话<text class="text-required"></text></view>
+          <view class="form-cell__bd">
+            <input type="number" class="form-cell__ctrl" bindinput="bindKeyInput('mobile')" name="mobile" placeholder="请输入电话号码" maxlength="15" value="{{dCard.mobile}}"/>
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">公司<text class="text-required"></text></view>
+          <view class="form-cell__bd">
+            <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('company')" name="company" placeholder="请输入公司名称" maxlength="20" value="{{dCard.company}}"/>
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">职务<text class="text-required"></text></view>
+          <view class="form-cell__bd">
+            <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('position')" name="position" placeholder="请输入职务" maxlength="15" value="{{dCard.position}}"/>
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">微信号</view>
+          <view class="form-cell__bd">
+            <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('wechat_id')" name="wechat_id" placeholder="请输入微信号" maxlength="15" value="{{dCard.wechat_id}}"/>
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">邮箱</view>
+          <view class="form-cell__bd">
+            <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('email')" name="email" placeholder="请输入邮箱" maxlength="25" value="{{dCard.email}}"/>
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">地址</view>
+          <view class="form-cell__bd">
+            <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('address')" name="address" placeholder="请输入地址" maxlength="30" value="{{dCard.address}}"/>
+          </view>
+        </view>
+      </view>
+      <view class="btn-area">
+        <button type="primary" formType="submit">保存到名片夹</button>
+      </view>
+    </form>
+  </view>
+</template>

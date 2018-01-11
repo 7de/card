@@ -1,0 +1,13 @@
+.dropdown_up {
+  .dropdown__content {
+    bottom: 100%;
+    margin-bottom: 12rpx;
+  }
+  .dropdown__arrow {
+    border-width: 12rpx 10rpx 0 10rpx;
+    border-top-color: #333333;
+    bottom: -12rpx;
+    left: 50%;
+    margin-left: -5rpx;
+  }
+}

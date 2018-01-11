@@ -1,0 +1,151 @@
+<style lang="scss">
+  $fontSize: 28rpx;
+  $lineHeight: 56rpx;
+  .search-bar {
+    margin-bottom: -1px;
+    padding: 15rpx 30rpx;
+    display: flex;
+    background-color: white;
+    box-sizing: border-box;
+    position: relative;
+    &::before {
+      content: " ";
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      height: 1px;
+      border-top: 1px solid #D7D6DC;
+      color: #D7D6DC;
+      -webkit-transform-origin: 0 0;
+      transform-origin: 0 0;
+      -webkit-transform: scaleY(0.5);
+      transform: scaleY(0.5);
+    }
+    &::after {
+      content: " ";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      height: 1px;
+      border-bottom: 1px solid #D7D6DC;
+      color: #D7D6DC;
+      -webkit-transform-origin: 0 100%;
+      transform-origin: 0 100%;
+      -webkit-transform: scaleY(0.5);
+      transform: scaleY(0.5);
+    }
+    &__form {
+      flex: auto;
+      position: relative;
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 200%;
+        height: 200%;
+        -webkit-transform: scale(0.5);
+        transform: scale(0.5);
+        -webkit-transform-origin: 0 0;
+        transform-origin: 0 0;
+        border-radius: $lineHeight;
+        border: 1px solid #E6E6EA;
+        box-sizing: border-box;
+        background: #f2f2f2;
+      }
+    }
+    &__input {
+      font-size: $fontSize;
+      height: 2em;
+      line-height: 2em;
+    }
+    &__box {
+      padding-left: 30px;
+      padding-right: 30px;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      position: relative;
+      z-index: 1;
+      .icon-search {
+        position: absolute;
+        top: 0;
+        left: 10px;
+        color: #B2B2B2;
+        font-size: $fontSize;
+        line-height: 2em;
+      }
+      .icon-close {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 0 10px;
+        color: #B2B2B2;
+        font-size: $fontSize;
+        line-height: $lineHeight;
+        border: 0;
+        background-color: transparent;
+        &::after {
+          display: none
+        }
+      }
+    }
+    &__btn {
+      margin-left: 30rpx;
+      font-size: 28rpx;
+      color: #666666;
+      line-height: 2em;
+      white-space: nowrap;
+    }
+  } 
+</style>
+
+<template>
+  <view class="search-bar">
+    <form class="search-bar__form" bindreset="formReset">
+      <view class="search-bar__box">
+        <i class="iconfont icon-search"></i>
+        <input class="search-bar__input" bindinput="bindKeyInput" bindblur="bindInputBlur" name="keyword" placeholder="{{placeholder}}" value="{{keyword}}" confirm-type="done" bindconfirm="search"/>
+        <button class="iconfont icon-close"  wx:if="{{hasWord}}" formType="reset"></button>
+      </view>
+    </form>
+    <slot></slot>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class SearchBarComponent extends wepy.component {
+    props = {
+      keyword: {
+        type: String,
+        twoWay: true
+      },
+      placeholder: String
+    }
+    data = {
+      hasWord: false
+    }
+    methods = {
+      bindKeyInput(e) {
+        this.keyword = e.detail.value
+        this.hasWord = !!e.detail.value
+      },
+      bindInputBlur(e) {
+      },
+      search(e) {
+        this.$emit('confirm', e.detail.value)
+      },
+      formReset() {
+        this.keyword = ''
+        this.hasWord = false
+      }
+    }
+    onLoad() {
+      this.hasWord = !!this.keyword
+    }
+  }
+</script>

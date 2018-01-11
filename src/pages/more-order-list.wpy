@@ -1,0 +1,215 @@
+<style lang="scss">
+  page {
+    overflow: hidden;
+  }
+  button.form-preview__bd {
+    font-size: inherit;
+    color: inherit;
+    text-align: inherit;
+    border-radius: inherit;
+    line-height: inherit;
+    &::before,
+    &::after {
+      display: none;
+    }
+    + .form-preview__bd {
+      &::before {
+        display: none;
+      }
+    }
+  }
+  .form-preview__bd {
+    .form-preview__btn {
+      border:1px solid #eee;
+      margin-right:10rpx;
+      &::after{
+        border:none;
+      }
+    }
+  }
+  .form-preview__ft {
+    overflow: hidden;
+    .form-preview__btn {
+      float: right;
+      font-size: 28rpx;
+      line-height: 75rpx;
+      border:1px solid #eee;
+      &::after{
+        border:none;
+      }
+    }
+  }
+  .color_737373{
+    color:#737373;
+  }
+</style>
+
+<template>
+  <form report-submit="{{true}}" bindsubmit="bindFormSubmit">
+  <scroll-view class="tabbar" scroll-y="{{true}}" bindscrolltolower="bindScrollLower" style="height: {{windowHeight}}px">
+    <view class="navbar">
+      <repeat for="{{tabArray}}">
+        <view class="navbar__item{{currentTab === index ? ' navbar__item_on' : ''}}" data-index="{{index}}" @tap="bindNavbarTap">{{item}}</view>
+      </repeat>
+    </view>
+    <view class="tabbar__panel" report-submit="{{true}}" bindsubmit="bindFormSubmit">
+      <view class="page-error" wx:if="{{list.length === 0 && searchLoading === false}}">
+        <image class="page-error__image" src="../images/list_error.png" style="width: 291rpx;height: 170rpx"></image>
+        <text class="page-error__sub-title">订单列表中尚未有任何订单</text>
+      </view>
+      <view>
+        <repeat for="{{list}}" key="order_list" item="item">
+          <view class="form-preview">
+            <view class="form-preview__hd">
+              <view class="form-preview__item">
+                <view class="form-preview__label" wx:if="{{item.pay_status === 0}}">待付款</view>
+                <view class="form-preview__label" wx:elif="{{item.status === 1 || item.status === 2}}">进行中</view>
+                <view class="form-preview__label" wx:elif="{{item.status === 3}}">待兑换</view>
+                <view class="form-preview__label" wx:else>已兑换</view>
+                <text class="form-preview__value">订单号:{{item.order_no}}</text>
+              </view>
+            </view>
+            <button class="form-preview__bd" data-url="more-order-detail?id={{item.id}}" formType="submit">
+              <view class="form-preview__item">
+                <view class="form-preview__label" style="min-width:3em;">
+                  <image src="../images/order_card.png" style="width:100rpx;height:100rpx;margin-top:10rpx;"></image>
+                </view>
+                <view class="form-preview__value">
+                  <view class="form-preview__item">
+                    <text class="form-preview__label" wx:if="{{item.demand && item.demand.type === 1}}">纸质名片定制</text>
+                    <text class="form-preview__label" wx:if="{{item.demand && item.demand.type === 2}}">需求名片定制</text>
+                    <text class="form-preview__label" wx:if="{{item.demand && item.demand.type === 3}}">个人视频定制</text>
+                    <text class="form-preview__label" wx:if="{{item.demand && item.demand.type === 4}}">企业视频定制</text>
+                    <text class="form-preview__value">{{item.created_at}}</text>
+                  </view>
+                  <view class="form-preview__item">
+                    <text class="form-preview__label color_737373" style="line-height:1.2;text-align:left;text-align-last:left;">需求描述：{{item.demand && item.demand.describe || ''}}</text>
+                  </view>
+                </view>
+              </view>
+            </button>
+            <view class="form-preview__bd">
+              <view class="form-preview__item">
+                <text class="form-preview__label"></text>
+                <view class="form-preview__value">
+                  合计:
+                  <text class="form-preview__price">￥{{item.total_money/100}}</text>
+                </view>
+              </view>
+            </view>
+            <view class="form-preview__bd">
+              <view class="form-preview__item">
+                <text class="form-preview__label"></text>
+                <view class="form-preview__value" wx:if="{{item.pay_status === 0}}" style="padding-top:10rpx;">
+                  <button type="primary" size="mini" data-url="more-order-detail?id={{item.id}}" formType="submit">去付款</button>
+                </view>
+                <view class="form-preview__value" wx:elif="{{item.status === 3}}" style="padding-top:10rpx;">
+                  <button type="primary" size="mini">兑换</button>
+                </view>
+              </view>
+            </view>
+            <view class="form-preview__ft" hidden="{{true}}">
+              <button class="form-preview__btn" type="default" size="mini">继续兑换</button>
+            </view>
+          </view>
+        </repeat>
+      </view>
+      <!-- 上拉加载 -->
+      <view class="loadmore" wx:if="{{searchLoading}}">
+        <i class="icon-loading"></i>
+        <text class="loadmore__tips">正在加载</text>
+      </view>
+      <view class="loadmore loadmore_line" wx:if="{{searchLoadingComplete && params.page > 2}}">
+        <text class="loadmore__tips">已经是全部了</text>
+      </view>
+    </view>
+  </scroll-view>
+  <movable-area class="fix-area">
+    <movable-view class="fix-area__btn " y="{{windowHeight - 100}}" out-of-bounds="{{false}}" direction="vertical">
+      <button type="primary" data-type="mobile" data-value="0755-86538075" formType="submit">
+        <i class="iconfont icon-kefu"></i> 联系客服
+      </button>
+    </movable-view>
+  </movable-area>
+  </form>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import moment from 'moment'
+  export default class MoreOrderList extends wepy.page {
+    config = {
+      navigationBarTitleText: '我的订单'
+    }
+    mixins = [ConfigMixin]
+    data = {
+      status: 0, // 0: 加载完毕，1: 列表加载中
+      params: {
+        page: 1
+      },
+      list: [],
+      tabArray: ['全部', '待付款', '进行中', '待兑换', '已兑换'],
+      currentTab: 0, // 当前tab选择
+      searchKeyword: '', // 搜索关键字
+      searchLoading: false, // 上拉加载更多
+      searchLoadingComplete: false // 加载完毕
+    }
+    methods = {
+      bindNavbarTap(e) {
+        const { index } = e.target.dataset
+        let params = {}
+        switch (index) {
+          case 0:
+            params = { pay_status: '', status: '', paga: 1 }
+            break
+          case 1:
+            params = { pay_status: 0, status: '', paga: 1 }
+            break
+          default:
+            params = { pay_status: 1, status: index, paga: 1 }
+        }
+        this.currentTab = index
+        this.list = []
+        this.fetchSearchList(params)
+      },
+      bindScrollLower() {
+        if (this.searchLoadingComplete || this.searchLoading) {
+          return
+        }
+        let page = this.params.page || 1
+        this.fetchSearchList({page: ++page})
+      }
+    }
+    onLoad() {
+      this.fetchSearchList()
+    }
+    fetchSearchList(params = {}) {
+      const URL = '/order/my-orders'
+      this.searchLoading = true
+      Object.assign(this.params, params, { expand: 'demand', order_type: 2 })
+      this.$parent.get(URL, this.params).then(res => {
+        const {
+          data: {
+            items,
+            _meta
+          }
+        } = res
+        items.forEach(item => {
+          if (item.created_at === 0) {
+            item.created_at = '未知'
+          } else {
+            item.created_at = moment(item.created_at * 1000).format('YYYY-MM-DD')
+          }
+        })
+        setTimeout(() => {
+          this.list.push(...items)
+          // 隐藏加载文字
+          this.searchLoadingComplete = (this.params.page >= _meta.totalCount)
+          this.searchLoading = false
+          this.$apply()
+        }, 200)
+      })
+    }
+  }
+</script>

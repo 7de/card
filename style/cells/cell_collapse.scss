@@ -1,0 +1,44 @@
+.cell_collapse {
+  .cell__ft {
+    padding-left: 13px;
+    padding-right: 13px;
+    height: 54rpx;
+    position: relative;
+    &::after {
+      content: " ";
+      display: inline-block;
+      height: 6px;
+      width: 6px;
+      border-width: 2px 2px 0 0;
+      border-color: #C8C8CD;
+      border-style: solid;
+      -webkit-transform: matrix(0.71, 0.71, -0.71, 0.71, 0, 0);
+      transform: matrix(0.71, 0.71, -0.71, 0.71, 0, 0);
+      position: absolute;
+      top: 50%;
+      margin-top: -4px;
+      right: 2px;
+      transition: all .3s ease;
+    }
+  }
+  &~.form-cell {
+    display: none;
+  }
+  &.cell_collapse_show {
+    background-color: gray;
+    color: #ffffff;
+    .form-cell__ctrl {
+      padding: 0 5px;
+      background-color: #fff;
+      color: #000;
+    }
+    .cell__ft {
+      &::after {
+        transform: rotate(135deg);
+      }
+    }
+    ~.form-cell {
+      display: flex;
+    }
+  }
+}

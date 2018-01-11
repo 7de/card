@@ -1,0 +1,70 @@
+.form-cell {
+  padding: 18rpx 30rpx;
+  display: flex;
+  position: relative;
+  &::before {
+    content: " ";
+    position: absolute;
+    left: 30rpx;
+    top: 0;
+    right: 0;
+    height: 1px;
+    border-top: 1px solid #e5e5e5;
+    color: #e5e5e5;
+    -webkit-transform-origin: 0 0;
+    transform-origin: 0 0;
+    -webkit-transform: scaleY(0.5);
+    transform: scaleY(0.5);
+  }
+  &:first-child::before {
+    display: none;
+  }
+  &__hd {
+    width: 5em;
+    line-height: 54rpx;
+    margin-right: .5em;
+    &__icon {
+      display: inline-block;
+      width: 44rpx;
+      height: 44rpx;
+      vertical-align: middle;
+    }
+  }
+  &__bd {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  &__ft {
+    color: #999999;
+    text-align: right;
+    line-height: 54rpx;
+  }
+}
+
+.form-cell__ctrl {
+  width: 100%;
+  height: 54rpx;
+  line-height: 54rpx;
+  box-sizing: border-box;
+  &+& {
+    margin-top: 18rpx;
+    padding-top: 18rpx;
+    padding-right: 35rpx;
+    height: 72rpx;
+    border-top: 1px solid #eeeeee;
+  }
+  &+.iconfont {
+    position: absolute;
+    right: 30rpx;
+    bottom: 26rpx;
+    color: #999999;
+  }
+}
+
+textarea.form-cell__ctrl {
+  height: 150px;
+}
+
+@import './form-cell_switch.scss';

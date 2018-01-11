@@ -1,0 +1,123 @@
+<style lang="scss">
+</style>
+
+<template>
+  <import src="../template/form-preview.wxml" />
+  <form class="tabbar" report-submit="{{true}}" bindsubmit="bindFormSubmit" wx:if="{{searchLoadingComplete}}">
+    <scroll-view class="tabbar__panel" scroll-y="{{true}}" style="height:{{windowHeight}}px;border-top:1px solid #d9d9d9;">
+      <view class="form-preview">
+        <view class="form-preview__hd">
+          <view class="form-preview__item">
+            <text class="form-preview__label">订单编号:{{info.order_no}}</text>
+            <view class="form-preview__value" wx:if="{{info.pay_status === 0}}"><i class="iconfont icon-processing"></i> 未付款</view>
+            <view class="form-preview__value" wx:elif="{{info.status === 1 || info.status === 2}}"><i class="iconfont icon-processing"></i> 进行中</view>
+            <view class="form-preview__value" wx:elif="{{info.status === 3}}"><i class="iconfont icon-waiting"></i> 待兑换</view>
+            <view class="form-preview__value" wx:else><i class="iconfont icon-check-circle"></i> 已兑换</view>
+          </view>
+        </view>
+      </view>
+      <view class="cells__title">服务信息</view>
+      <template is="form-preview" data="{{...info, host}}" />
+      <radio-group class="cells" wx:if="{{info.pay_status === 0}}" bindchange="radioChange">
+        <label class="cell cell_radio">
+          <view class="cell__hd"><i class="iconfont icon-wxpay"></i></view>
+          <view class="cell__bd">微信支付</view>
+          <view class="cell__ft">
+            <radio name="payType" value="wxpay" color="#1875f0" checked="{{true}}" />
+          </view>
+        </label>
+        <label class="cell cell_radio">
+          <view class="cell__hd"><i class="iconfont icon-ybpay"></i></view>
+          <view class="cell__bd">云币支付</view>
+          <view class="cell__ft">
+            <radio name="payType" value="ybpay" color="#1875f0" />
+          </view>
+        </label>
+      </radio-group>
+    </scroll-view>
+    <view class="paybar" wx:if="{{info.pay_status === 0}}">
+      <view class="paybar__content">
+        支付总价：
+        <view class="paybar__price" wx:if="{{payType === 'wxpay'}}">
+          ￥<text class="paybar__price__num">{{totalMoney}}</text>
+        </view>
+        <view class="paybar__price" wx:elif="{{payType === 'ybpay'}}">
+          <text class="paybar__price__num">{{totalMoney * 10}}云币</text>
+        </view>
+      </view>
+      <button class="paybar__btn" data-type="{{payType}}" data-value="{{id}}" type="primary" formType="submit">确认支付</button>
+    </view>
+  </form>
+  <!-- 加载 -->
+  <view class="loadmore" wx:else>
+    <i class="icon-loading"></i>
+    <text class="loadmore__tips">正在加载</text>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import moment from 'moment'
+  export default class MoreOrderDetail extends wepy.page {
+    config = {
+      navigationBarTitleText: '订单详情'
+    }
+    mixins = [ConfigMixin]
+    data = {
+      id: 0,
+      info: null,
+      payType: 'wxpay',
+      totalMoney: 0.00,
+      searchLoadingComplete: false // 上拉加载更多
+    }
+    methods = {
+      radioChange(e) {
+        this.payType = e.detail.value
+      }
+    }
+
+    onLoad(options) {
+      const { id } = options
+      this.id = id
+      this.$apply()
+    }
+
+    onShow() {
+      const { id } = this.data
+      this.getDetail(id)
+    }
+
+    getDetail(id) {
+      const URL = `/order/${id}`
+      this.searchLoading = true
+      this.$parent.get(URL, { expand: 'demand' }).then(res => {
+        const { code, data, message } = res
+        if (code === 0) {
+          for (let k in data) {
+            if (k === 'demand' && data[k] && data[k]['urls']) {
+              data[k]['urls'] = data[k]['urls'].split('|')
+            }
+            if (k === 'updated_at') {
+              data[k] = moment(data[k] * 1000).format('YYYY-MM-DD')
+            }
+          }
+          this.info = data
+          this.searchLoadingComplete = true
+          this.totalMoney = (data['total_money'] / 100).toFixed(2)
+        } else {
+          wepy.showModal({
+            title: '温馨提示',
+            content: message,
+            showCancel: false,
+            confirmColor: '#1875f0',
+            success: function(res) {
+              wepy.navigateBack()
+            }
+          })
+        }
+        this.$apply()
+      })
+    }
+  }
+</script>

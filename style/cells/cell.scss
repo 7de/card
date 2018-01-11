@@ -1,0 +1,65 @@
+.cell {
+  display: flex;
+  padding: 20rpx 30rpx;
+  position: relative;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  &::before {
+    content: " ";
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    top: 0;
+    right: 0;
+    height: 1px;
+    border-top: 1px solid #e5e5e5;
+    color: #e5e5e5;
+    -webkit-transform-origin: 0 0;
+    transform-origin: 0 0;
+    -webkit-transform: scaleY(0.5);
+    transform: scaleY(0.5);
+  }
+  &:first-child::before {
+    display: none
+  }
+  &__hd {
+    margin-right: .5em;
+  }
+  &__bd {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  &__ft {
+    text-align: right;
+    color: #999999;
+  }
+  &__ctrl {
+    width: 100%;
+    height: 54rpx;
+    line-height: 54rpx;
+    box-sizing: border-box;
+  }
+}
+
+button.cell {
+  background-color: inherit;
+  font-size: inherit;
+  color: inherit;
+  text-align: inherit;
+  border-radius: inherit;
+  line-height: inherit;
+  &::after {
+    display: none;
+  }
+}
+
+textarea.cell__ctrl {
+  height: 150px;
+}
+
+@import './cell_access.scss';
+@import './cell_collapse.scss';
+@import './cell_switch.scss';

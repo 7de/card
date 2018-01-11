@@ -1,0 +1,14 @@
+.dropdown_down_right {
+  .dropdown__content {
+    margin-top: 12rpx;
+  }
+  .dropdown__cell__bd {
+    text-align: left;
+  }
+  .dropdown__arrow {
+    border-width: 0 10rpx 12rpx 10rpx;
+    border-bottom-color: #333333;
+    top: -12rpx;
+    right: 20rpx;
+  }
+}

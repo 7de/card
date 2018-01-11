@@ -1,0 +1,62 @@
+<style lang="scss">
+</style>
+
+<template>
+  <import src="../template/business-card.wxml"/>
+  <view class="body">
+    <view class="page-error" wx:if="{{list.lenght === 0}}">
+      <image class="page-error__image" src="../images/list_error.png" style="width: 291rpx;height: 170rpx"></image>
+      <text class="page-error__sub-title">兑换列表中尚未有任何收藏</text>
+    </view>
+    <view class="panel" style="margin-top:20rpx;" wx:else>
+      <view class="panel__bd">
+        <repeat for="{{list}}" key="id" item="item" index="index">
+          <view class="media-box media-box_appmsg" type="inherit" data-url="user-create">
+            <view class="media-box__hd">
+              <image class="media-box__thumb" src="../images/order_card.png" wx:if="{{item.demand.type === 1 || item.demand.type === 2}}"></image>
+              <image class="media-box__thumb" src="../images/order_video.png" wx:elif="{{item.demand.type === 3 || item.demand.type === 4}}"></image>
+              <image class="media-box__thumb" src="../images/news_system.png" wx:else></image>
+            </view>
+            <view class="media-box__bd">
+              <view class="media-box__desc">兑 换 码：<text class="text-black" selectable="selectable">{{item.demand.redeem_code || ''}}</text></view>
+              <view class="media-box__desc">兑换时间：<text class="text-black">{{item.created_at}}</text></view>
+            </view>
+          </view>
+        </repeat>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import moment from 'moment'
+  export default class MoreRedeemList extends wepy.page {
+    config = {
+      navigationBarTitleText: '兑换列表'
+    }
+    data = {
+      list: []
+    }
+    methods = {}
+    onLoad() {
+      this.getList()
+    }
+    getList() {
+      const URL = `/card-resource/list`
+      this.$parent.get(URL, { expand: 'demand,order' }).then(res => {
+        let {
+          data: {
+            items
+          }
+        } = res
+        items.forEach(item => {
+          item.created_at = moment(item.created_at * 1000).format('YYYY-MM-DD')
+        })
+        this.list = items
+        this.$apply()
+        console.log(this.list)
+      })
+    }
+  }
+</script>

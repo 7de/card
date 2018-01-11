@@ -1,0 +1,65 @@
+<style lang="scss">
+</style>
+
+<template>
+  <import src="../template/folder-list.wxml"/>
+  <form report-submit="{{true}}" bindsubmit="bindFormSubmit">
+    <view class="cells__title">分组名称</view>
+    <view class="cells">
+      <button class="cell" data-url="/pages/folder-groups-create?id={{group_id}}&name={{group_name}}" formType="submit">
+        <view class="cell__bd">{{group_name}}</view>
+      </button>
+    </view>
+    <view class="cells__title">分组成员</view>
+    <view class="cells">
+      <button class="cell" data-url="/pages/folder-group-select?id={{group_id}}" formType="submit">
+        <view class="cell__bd">
+          <text class="text-primary">添加成员</text>
+        </view>
+      </button>
+    </view>
+    <template is="folder-list" data="{{anchor: '', list: group_list, host}}"/>
+  </form>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import RestructureMixin from '../mixins/restructure'
+  export default class FolderGroup extends wepy.page {
+    config = {
+      navigationBarTitleText: ''
+    }
+    mixins = [RestructureMixin, ConfigMixin]
+    data = {
+      group_id: '',
+      dCard: {
+        u_name: '吴韡辉',
+        c_name: '云端互联网(深圳)有限公司',
+        job: 'Web前端工程师',
+        type: 'business-card_1',
+        image: '../images/business-card-background/001.jpg'
+      }
+    }
+    onLoad(options) {
+      const { id } = options
+      this.group_id = id
+    }
+    onRoute() {
+      this.getCardGroups(this.group_id)
+    }
+    getCardGroups(id) {
+      const URL = `/card-groups/${id}`
+      this.$parent.get(URL, {expand: 'cards'}).then(res => {
+        const { data } = res
+        wepy.setNavigationBarTitle({
+          title: data.group_name
+        })
+        this.setData({
+          group_name: data.group_name,
+          group_list: this.restructureList(data.cards)
+        })
+      })
+    }
+  }
+</script>

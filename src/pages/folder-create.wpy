@@ -1,0 +1,54 @@
+<style lang="scss">
+</style>
+
+<template>
+  <create :dCard.sync="dCard"/>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  import cardCreate from '@Components/business-card-create'
+
+  export default class FolderCreate extends wepy.page {
+    config = {
+      navigationBarTitleText: '添加名片'
+    }
+    components = {
+      create: cardCreate
+    }
+    data = {
+      dCard: {}
+    }
+    methods = {
+      bindKeyInput(k, e) {
+        this.dCard[k] = e.detail.value
+      },
+      formSubmit(e) {
+        const URL = '/card/cards'
+        let params = e.detail.value
+        Object.assign(params, {
+          card_type: 0,
+          template_type: null
+        })
+        console.log(e.detail.value)
+        this.$parent.post(URL, params).then(res => {
+          const {code, message} = res
+          if (code === 0) {
+            wepy.showToast({
+              title: '添加成功',
+              icon: 'success'
+            })
+            wepy.navigateTo({url: '/pages/folder-index'})
+          } else {
+            wepy.showToast({
+              title: message,
+              icon: 'loading'
+            })
+            console.log(res)
+          }
+        })
+      }
+    }
+  }
+</script>

@@ -1,0 +1,67 @@
+.navbar {
+  display: flex;
+  position: absolute;
+  z-index: 500;
+  top: 0;
+  width: 100%;
+  background-color: #ffffff;
+  &::before {
+    content: " ";
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    top: 0;
+    right: 0;
+    height: 1px;
+    border-top: 1px solid #e5e5e5;
+    color: #e5e5e5;
+    -webkit-transform-origin: 0 0;
+    transform-origin: 0 0;
+    -webkit-transform: scaleY(0.5);
+    transform: scaleY(0.5);
+  }
+  &::after {
+    content: " ";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    height: 1px;
+    border-bottom: 1px solid #d9d9d9;
+    color: #d9d9d9;
+    -webkit-transform-origin: 0 100%;
+    transform-origin: 0 100%;
+    -webkit-transform: scaleY(0.5);
+    transform: scaleY(0.5);
+  }
+  &__item {
+    padding: 24rpx;
+    display: block;
+    flex: 1;
+    font-size: 30rpx;
+    line-height: 1.2;
+    text-align: center;
+    position: relative;
+    &::after {
+      content: " ";
+      position: absolute;
+      left: 15px;
+      bottom: 0;
+      right: 70px;
+      height: 6px;
+      border-bottom: 6px solid #1875f0;
+      -webkit-transform-origin: 0 100%;
+      transform-origin: 0 100%;
+      -webkit-transform: scaleY(0.5);
+      transform: scaleY(0.5);
+    }
+  }
+  &__item_on::after {
+    transition: all .3s;
+    right: 15px;
+  }
+  +.tabbar__panel {
+    padding-top: 84rpx;
+    padding-bottom: 0;
+  }
+}

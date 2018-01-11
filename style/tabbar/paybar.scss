@@ -1,0 +1,39 @@
+.paybar {
+  height: 90rpx;
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  &__content {
+    padding: 20rpx;
+    flex: 1;
+    min-width: 0;
+    color: #737373;
+    font-size: 30rpx;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  &__btn {
+    width: 375rpx;
+    height: 100%;
+    font-size: 34rpx;
+    border-radius: 0;
+    &::after {
+      display: none;
+    }
+  }
+  &__price {
+    display: inline-block;
+    color: #f72e2e;
+    font-size: 34rpx;
+    font-family: Verdana, Tahoma, arial;
+    vertical-align: -2rpx;
+    &__num {
+      font-size: 40rpx;
+    }
+  }
+}

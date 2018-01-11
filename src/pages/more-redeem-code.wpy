@@ -1,0 +1,106 @@
+<style lang="scss">
+</style>
+
+<template>
+  <view class="page-redeem">
+    <view class="page-redeem__icon-area">
+      <image class="page-redeem__icon" src="../images/redeem-code.png" />
+    </view>
+    <view class="page-redeem__rich-text">
+      <view class="ul__title">兑换物品</view>
+      <view class="ul">
+        <view class="li">定制视频、定制名片</view>
+      </view>
+      <view class="ul__title">兑换方式</view>
+      <view class="ul">
+        <view class="li">输入平台短信发送给您的兑换码</view>
+        <view class="li">名片兑换：兑换成功后前往名片编辑页面可查看定制的名片</view>
+        <view class="li">视频兑换：下载定制视频到手机，再到编辑页面添加视频</view>
+      </view>
+    </view>
+    <view class="page-redeem__form">
+      <form report-submit="{{true}}" bindsubmit="bindFormSubmit" bindreset="formReset">
+        <!-- 默认 -->
+        <view class="page-redeem__form__group" wx:if="{{status === 0}}">
+          <view class="page-redeem__form__label">兑换码</view>
+          <view class="page-redeem__form__value">
+            <input class="page-redeem__form__ctrl" name="code" type="number" />
+          </view>
+        </view>
+        <view class="page-redeem__form__group" wx:if="{{status === 0}}">
+          <view class="page-redeem__form__label">　</view>
+          <view class="page-redeem__form__btn-area">
+            <button type="default" size="mini" @tap="toView('more-redeem-list')">查看兑换记录</button>
+            <button type="primary" size="mini" formType="submit">确定</button>
+          </view>
+        </view>
+        <!-- 成功 -->
+        <view class="page-error" wx:if="{{status === 1}}">
+          <icon class="page-error__image" type="success" size="70" style="height: auto" />
+          <text class="page-error__sub-title">恭喜您，兑换成功</text>
+          <view class="btn-area">
+            <button type="primary" @tap="play({{record.source}})" wx:if="{{record.resource_type === 2}}">查看视频</button>
+            <button type="default" formType="reset">继续兑换</button>
+          </view>
+        </view>
+        <!-- 失败 -->
+        <view class="page-error" wx:if="{{status === 2}}">
+          <icon class="page-error__image" type="warn" size="70" style="height: auto" />
+          <text class="page-error__sub-title">抱歉，兑换码无效</text>
+          <view class="btn-area">
+            <button type="default" formType="reset">继续兑换</button>
+          </view>
+        </view>
+      </form>
+    </view>
+  </view>
+  <video-player save="true"></video-player>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import VideoPlayer from '@Components/video-player'
+  import ConfigMixin from '../mixins/config'
+  export default class MoreRedeemCode extends wepy.page {
+    config = {
+      navigationBarTitleText: '兑换码'
+    }
+    components = {
+      'video-player': VideoPlayer
+    }
+    mixins = [ConfigMixin]
+    data = {
+      status: 0, // 0: 默认，1: 成功, 2: 失败
+      record: null
+    }
+    methods = {
+      play(url) {
+        console.log(this.host + url)
+        this.$invoke('video-player', 'set', this.host + url)
+        this.$invoke('video-player', 'show')
+      },
+      toView(url) {
+        wepy.navigateTo({url})
+      },
+      bindFormSubmit(e) {
+        let URL = '/card-resource/redeem'
+        wepy.showLoading({mask: true})
+        this.$parent.post(URL, e.detail.value).then(res => {
+          const { code, data } = res
+          console.log(res)
+          if (code === 0) {
+            this.status = 1
+            this.record = data
+          } else {
+            this.status = 2
+          }
+          this.$apply()
+          wepy.hideLoading()
+        })
+      },
+      formReset() {
+        this.status = 0
+      }
+    }
+  }
+</script>

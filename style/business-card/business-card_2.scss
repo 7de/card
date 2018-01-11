@@ -1,0 +1,73 @@
+.business-card_2 {
+  color: #2f2725;
+  font-size: 22rpx;
+  .business-card__name {
+    font-size: 36rpx;
+    font-weight: 600;
+    top: 163rpx;
+    left: 45rpx;
+    right: 350rpx;
+  }
+  .business-card__company {
+    font-size: 34rpx;
+    left: 214rpx;
+    right: 218rpx;
+    top: 38rpx;
+  }
+  .business-card__job {
+    color: #e94729;
+    font-size: 26rpx;
+    top: 174rpx;
+    right: 45rpx;
+    left: 350rpx;
+    text-align: right;
+  }
+  .business-card__logo {
+    left: 45rpx;
+    top: 17rpx;
+    image,
+    .business-card__null {
+      width: 125rpx;
+      height: 125rpx;
+      color: #ffffff;
+      border-radius: 0 0 8rpx 8rpx;
+    }
+  }
+  .business-card__video {
+    right: 40rpx;
+    top: 23rpx;
+    bottom: auto;
+  }
+  .business-card__address {
+    top: 230rpx;
+    left: 45rpx;
+    right: 45rpx;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    .business-card::before {
+      content: 'Address:';
+      color: #e94729;
+      margin-right: 5rpx;
+    }
+  }
+  .business-card__tel {
+    top: 264rpx;
+    left: 45rpx;
+    .business-card::before {
+      content: 'Phone:';
+      color: #e94729;
+      margin-right: 5rpx;
+    }
+  }
+  .business-card__email {
+    display: block;
+    top: 298rpx;
+    left: 45rpx;
+    .business-card::before {
+      content: 'Email:';
+      color: #e94729;
+      margin-right: 5rpx;
+    }
+  }
+}

@@ -1,0 +1,27 @@
+.page-error {
+  margin-top: 10%;
+  text-align: center;
+  &__title {
+    margin: 30rpx auto;
+    display: block;
+    color: #000000;
+    font-size: 32rpx;
+    text-align: center;
+  }
+  &__sub-title {
+    margin: 30rpx auto;
+    display: block;
+    color: #595959;
+    font-size: 28rpx;
+    text-align: center;
+  }
+  &__image {
+    margin: 50rpx auto;
+    display: block;
+    width: 233rpx;
+    height: 174rpx;
+  }
+  &__btn-area {
+    margin: 90rpx 40rpx;
+  }
+}

@@ -1,0 +1,150 @@
+<style lang="scss">
+  
+</style>
+
+<template>
+  <scroll-view class="body" scroll-y="{{true}}" bindscrolltolower="bindScrollLower" style="height:{{windowHeight}}px">
+    <search-bar :keyword.sync="searchKeyword" @confirm.user="bindConfirm" placeholder="搜索商机/公司">
+      <view class="search-bar__btn" @tap="bindSelect">{{itemList[tapIndex]}}</view>
+    </search-bar>
+    <form class="panel panel_niche" report-submit="{{true}}" bindsubmit="bindFormSubmit" wx:if="{{list.length > 0}}">
+      <view class="panel__bd">
+        <repeat for="{{list}}">
+          <button class="media-box media-box_text" type="inherit" data-url="niche-detail?id={{item.id}}" formType="submit">
+            <view class="media-box__hd">
+              <image class="media-box__thumb round" src="{{item['posterInfo']['logo_url']}}" />
+              <i class="iconfont icon-v-circle" wx:if="{{item['posterInfo']['user_verify_status'] === 1}}"></i>
+            </view>
+            <view class="media-box__title">{{item['title']}}</view>
+            <view class="media-box__sub-title">
+              {{item['poster_name']}} | {{item['poster_company']}}
+            </view>
+            <view class="media-box__desc">{{item['content']}}</view>
+            <view class="media-box__info" wx:if="{{item['images'].length > 0}}">
+              <repeat for="{{item['images']}}" item="imageUrl">
+                <view class="media-box__info__photo">
+                  <image mode="aspectFill" src="{{imageUrl}}" />
+                </view>
+              </repeat>
+            </view>
+            <view class="media-box__info">
+              <view class="media-box__info__meta">发布时间：</view>
+              <view class="media-box__info__meta">{{item['created_at']}}</view>
+            </view>
+          </button>
+        </repeat>
+      </view>
+    </form>
+    <!-- 空白 -->
+    <view class="page-error" wx:elif="{{!searchLoading}}">
+      <image class="page-error__image" src="../images/list_error.png" style="width: 291rpx;height: 170rpx"></image>
+      <view class="loadmore">
+        <text class="loadmore__tips">暂无信息</text>
+      </view>
+    </view>
+    <!-- 加载 -->
+    <view class="loadmore" wx:if="{{searchLoading}}">
+      <i class="icon-loading"></i>
+      <text class="loadmore__tips">正在加载</text>
+    </view>
+    <view class="loadmore loadmore_line" wx:if="{{searchLoadingComplete && params.page > 2}}">
+      <text class="loadmore__tips">已经是全部了</text>
+    </view>
+  </scroll-view>
+  <form class="panel panel_niche" report-submit="{{true}}" bindsubmit="bindFormSubmit">
+    <movable-area class="fix-area">
+      <movable-view class="fix-area__btn " y="{{windowHeight - 100}}" out-of-bounds="{{false}}" direction="vertical">
+        <button type="primary" data-url="user-product-news" formType="submit">
+          <i class="iconfont icon-release"></i>
+          发布商机
+        </button>
+      </movable-view>
+    </movable-area>
+  </form>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import SearchBarComponent from '@Components/search-bar'
+  import moment from 'moment'
+  export default class NicheIndex extends wepy.page {
+    config = {
+      navigationBarTitleText: '商机中心'
+    }
+    mixins = [ConfigMixin]
+    components = {
+      'search-bar': SearchBarComponent
+    }
+    data = {
+      tapIndex: 0,
+      itemList: ['全部', '金融', '科技', '商务合作', '招商投资', '其他'],
+      list: [],
+      params: {
+        page: 1
+      },
+      searchKeyword: '', // 搜索关键字
+      searchLoading: false, // 上拉加载更多
+      searchLoadingComplete: false // 加载完毕
+    }
+    methods = {
+      bindSelect() {
+        wepy.showActionSheet({
+          itemList: this.itemList,
+          success: (res) => {
+            if (!this.searchLoading) {
+              const { tapIndex } = res
+              this.tapIndex = tapIndex
+              this.fetchSearchList({
+                page: 1,
+                info_type: tapIndex === 0 ? '' : tapIndex
+              })
+              this.$apply()
+            }
+          }
+        })
+      },
+      bindScrollLower(e) {
+        if (this.searchLoadingComplete || this.searchLoading) {
+          return
+        }
+        let page = this.params.page || 1
+        this.fetchSearchList({page: ++page})
+      }
+    }
+
+    onRoute() {
+      // 清空数据重新获取
+      this.tapIndex = 0
+      this.params = { page: 1 }
+      this.list = []
+      this.fetchSearchList()
+    }
+
+    fetchSearchList(params = {}) {
+      this.searchLoading = true
+      const URL = '/business-infos'
+      Object.assign(this.params, params)
+      this.$parent.get(URL, this.params).then(res => {
+        const { data } = res
+        let list = data.items
+        list.forEach((element, index, arr) => {
+          let images = element['images'].split('|')
+          images.forEach((image, i, imageArr) => {
+            imageArr[i] = this.host + image
+          })
+          arr[index]['images'] = images
+          arr[index]['created_at'] = moment(element['created_at'] * 1000).format('YYYY年MM月DD日 HH:mm')
+          arr[index]['posterInfo']['logo_url'] = element['posterInfo']['logo_url'] ? this.host + element['posterInfo']['logo_url'] : ''
+        })
+        setTimeout(() => {
+          // 隐藏加载文字
+          this.list = list
+          this.searchLoadingComplete = (this.params.page >= data.pageCount)
+          this.searchLoading = false
+          this.$apply()
+        }, 200)
+      })
+    }
+  }
+</script>

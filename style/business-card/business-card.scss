@@ -1,0 +1,76 @@
+.business-card {
+  margin: 20rpx auto;
+  width: 690rpx;
+  height: 340rpx;
+  color: #595959;
+  font-size: 26rpx;
+  background-color: White;
+  background-size: cover;
+  border-radius: 5px;
+  overflow: hidden;
+  line-height: 1.4;
+  word-wrap: break-word;
+  word-break: break-all;
+  position: relative;
+  &__name,
+  &__position,
+  &__mobile,
+  &__company,
+  &__address,
+  &__logo,
+  &__video,
+  &__email {
+    position: absolute;
+    display: none;
+  }
+  text.text-gray {
+    margin-right: 30rpx;
+  }
+}
+
+// 样式微调
+.business-card {
+  &__name,
+  &__job,
+  &__tel,
+  &__email {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  &__image {
+    width: 100%;
+    height: 100%;
+  }
+  &>&__image {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  &__logo,
+  &__video {
+    width: 176rpx;
+    height: 114rpx;
+  }
+}
+
+// 默认视频播放位置
+.business-card__video {
+  display: block;
+  left: 534rpx;
+  top: 190rpx;
+  width: 106rpx;
+  height: 106rpx;
+}
+
+@import './business-card__item.scss';
+@import './business-card__null.scss';
+@import './business-card_0.scss';
+@import './business-card_default.scss';
+// @import './business-card_1.scss';
+// @import './business-card_2.scss';
+// @import './business-card_3.scss';
+// @import './business-card_4.scss';
+// @import './business-card_5.scss';
+// @import './business-card_6.scss';
+// @import './business-card_7.scss';

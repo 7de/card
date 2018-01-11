@@ -1,0 +1,107 @@
+<style lang="scss">
+</style>
+
+<template>
+  <form class="tabbar" report-submit="{{true}}" bindsubmit="bindFormSubmit">
+    <scroll-view class="tabbar__panel" scroll-y="{{false}}" style="height:{{windowHeight}}px">
+      <view class="cells__title">支付信息</view>
+      <view class="panel">
+        <view class="panel__bd">
+          <view class="media-box media-box_appmsg">
+            <view class="media-box__hd" style="width:216rpx;">
+              <image class="media-box__thumb" src="../images/post-card.png" />
+            </view>
+            <view class="media-box__bd">
+              <view class="media-box__title">支付项目：传递名片</view>
+              <view class="media-box__desc">单价：￥1</view>
+              <view class="media-box__desc">数量：{{count}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+      <radio-group class="cells" bindchange="bindRadioChange">
+        <view class="cell">
+          <view class="cell__bd">支付方式</view>
+        </view>
+        <label class="form-cell">
+          <view class="cell__hd"><i class="iconfont icon-wxpay"></i></view>
+          <view class="cell__bd">微信支付</view>
+          <view class="cell__ft">
+            <radio value="wxpay" checked="{{true}}" color="#1875f0" />
+          </view>
+        </label>
+        <label class="form-cell">
+          <view class="cell__hd"><i class="iconfont icon-ybpay"></i></view>
+          <view class="cell__bd">云币支付</view>
+          <view class="cell__ft">
+            <radio value="ybpay" color="#1875f0" />
+          </view>
+        </label>
+      </radio-group>
+    </scroll-view>
+    <view class="paybar">
+      <view class="paybar__content">
+        支付总价：
+        <view class="paybar__price" wx:if="{{payType === 'wxpay'}}">
+          ￥<text class="paybar__price__num">{{totalMoney}}</text>
+        </view>
+        <view class="paybar__price" wx:elif="{{payType === 'ybpay'}}">
+          <text class="paybar__price__num">{{totalMoney * 10}}云币</text>
+        </view>
+      </view>
+      <button class="paybar__btn" data-type="{{payType}}" data-value="{{orderID}}" type="primary" formType="submit">确认支付</button>
+    </view>
+  </form>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import RestructureMixin from '../mixins/restructure'
+  export default class LibraryPayment extends wepy.page {
+    config = {
+      navigationBarTitleText: '支付'
+    }
+    mixins = [ConfigMixin, RestructureMixin]
+    data = {
+      payType: 'wxpay',
+      orderID: 0,
+      count: 0,
+      totalMoney: 0.00
+    }
+    methods = {
+      bindRadioChange(e) {
+        const { value } = e.detail
+        this.payType = value
+      }
+    }
+    onLoad(options) {
+      const { orderID } = options
+      this.orderID = orderID
+      this.getOrder(orderID)
+    }
+    getOrder(id) {
+      const URL = `/order/${id}`
+      wepy.showLoading({ mask: true })
+      this.$parent.get(URL).then(res => {
+        const { code, data, message } = res
+        if (code === 0) {
+          this.count = data['target_user_id'].split(',').length
+          this.totalMoney = data['total_money'] / 100
+          this.$apply()
+        } else {
+          wepy.showModal({
+            title: '系统提示',
+            content: message,
+            showCancel: false,
+            confirmColor: '#1875f0',
+            success: function() {
+              wepy.navigateBack()
+            }
+          })
+        }
+        wepy.hideLoading()
+      })
+    }
+  }
+</script>

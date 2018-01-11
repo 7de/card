@@ -1,0 +1,60 @@
+.business-card_default {
+  width: 690rpx;
+  height: 410rpx;
+  .business-card__logo {
+    display: block;
+    left: 534rpx;
+    top: 40rpx;
+    width: 106rpx;
+    height: 106rpx;
+  }
+  .business-card__video {
+    display: block;
+    left: 534rpx;
+    top: 190rpx;
+    width: 106rpx;
+    height: 106rpx;
+  }
+  .business-card__company {
+    display: block;
+    left: 40rpx;
+    top: 50rpx;
+    color: #666666;
+    font-size: 30rpx;
+  }
+  .business-card__name {
+    display: block;
+    left: 40rpx;
+    top: 135rpx;
+    color: #333333;
+    font-size: 42rpx;
+  }
+  .business-card__position {
+    display: block;
+    left: 40rpx;
+    top: 195rpx;
+    color: #808080;
+    font-size: 26rpx;
+  }
+  .business-card__mobile {
+    display: block;
+    left: 40rpx;
+    top: 250rpx;
+    color: #1875f0;
+    font-size: 26rpx;
+  }
+  .business-card__email {
+    display: block;
+    left: 40rpx;
+    top: 300rpx;
+    color: #808080;
+    font-size: 26rpx;
+  }
+  .business-card__address {
+    display: block;
+    left: 40rpx;
+    top: 350rpx;
+    color: #1875f0;
+    font-size: 26rpx;
+  }
+}

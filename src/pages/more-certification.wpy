@@ -1,0 +1,264 @@
+<style lang="scss">
+  .form-cell__btn {
+    button {
+      white-space: nowrap;
+      width: 210rpx;
+    }
+  }
+</style>
+
+<template>
+  <form class="form-cells" report-submit="{{true}}" bindsubmit="bindFormSubmit" bindreset="formReset" wx:if="{{info.user_verify_status === 0}}">
+    <view class="cells__title">
+        基本资料<text class="text-required"></text>
+    </view>
+    <view class="cells">
+      <view class="form-cell">
+        <view class="form-cell__hd">姓名</view>
+        <view class="form-cell__bd">
+          <input class="form-cell__ctrl" name="realname" data-name="realname" placeholder="请输入您的姓名" type="text" value="{{realname}}" bindblur="cache" />
+        </view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">身份证号</view>
+        <view class="form-cell__bd">
+          <input class="form-cell__ctrl" name="card_no" data-name="card_no" placeholder="请输入您的身份证号" type="text" maxlength="18" value="{{card_no}}" bindblur="cache" />
+        </view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">手机号码</view>
+        <view class="form-cell__bd">
+          <input class="form-cell__ctrl" name="phone" data-name="phone" placeholder="请输入您的电话号码" type="number" maxlength="11" bindinput="bindKeyInput" value="{{phone}}" bindblur="cache" />
+        </view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__hd">验证码</view>
+        <view class="form-cell__bd">
+          <input class="form-cell__ctrl" name="code" data-name="code" placeholder="6位验证码" type="number" maxlength="6" value="{{code}}" bindblur="cache"/>
+        </view>
+        <view class="form-cell__btn">
+          <button type="default" plain="{{true}}" disabled="{{true}}" class="round" size="mini" wx:if="{{isCountDown}}">{{countDownNum}}s</button>
+          <button type="primary" plain="{{true}}" class="round" size="mini" @tap="getCode" wx:else>获取验证码</button>
+        </view>
+      </view>
+    </view>
+    <view class="cells__title">
+        身份证明<text class="text-required"></text>
+    </view>
+    <view class="cells">
+      <view class="form-cell">
+        <view class="form-cell__bd">
+          <image mode="aspectFit" src="../images/certification_sample.png" style="width:324rpx;height:262rpx;"></image>
+        </view>
+        <view class="form-cell__bd">
+          <uploader name="card_image1" count="1" />
+        </view>
+      </view>
+      <view class="form-cell">
+        <view class="form-cell__bd">
+          <image mode="aspectFit" src="../images/certification_sample2.png" style="width:324rpx;height:262rpx;"></image>
+        </view>
+        <view class="form-cell__bd" >
+          <uploader2 name="card_image2" count="1" />
+        </view>
+      </view>
+    </view>
+    <view class="btn-area">
+      <button type="primary" class="round" formType="submit">提交审核</button>
+    </view>
+  </form>
+  <form class="page-message" report-submit="{{true}}" bindsubmit="bindFormSubmit" wx:else >
+    <view class="page-message__icon-area" style="margin-top:30rpx;">
+      <image style="width: 248rpx; height: 195rpx;" src="../images/certification_ing.png" wx:if="{{info.user_verify_status === 1}}"></image>
+      <image style="width: 248rpx; height: 195rpx;" src="../images/certification_success.png" wx:elif="{{info.user_verify_status === 2}}"></image>
+      <image style="width: 248rpx; height: 195rpx;" src="../images/certification_fail.png" wx:elif="{{info.user_verify_status === 3}}"></image>
+    </view>
+    <view class="page-message__text-area" wx:if="{{info.user_verify_status === 1}}">
+      <view class="page-message__title">实名认证已提交</view>
+      <view class="page-message__desc">认证中...请您耐心等待</view>
+    </view>
+    <view class="page-message__text-area" wx:elif="{{info.user_verify_status === 2}}">
+      <view class="page-message__title">恭喜您，实名认证成功</view>
+    </view>
+    <view class="page-message__text-area" wx:elif="{{info.user_verify_status === 3}}">
+      <view class="page-message__title">对不起，实名认证失败</view>
+      <view class="page-message__desc" wx:if="{{info.verifyInfo.failed_reason}}">失败原因：{{info.verifyInfo.failed_reason}}</view>
+    </view>
+    <view class="page-message__opr-area">
+      <view class="btn-area">
+        <button type="primary" wx:if="{{info.user_verify_status === 3}}" @tap="resetFormFun">重新认证</button>
+        <button type="primary" data-type="switchTab" data-url="user-index" formType="submit" wx:else>返回首页</button>
+      </view>
+    </view>
+  </form>
+
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import UploadImageComponent from '@Components/upload-image'
+  export default class MoreOrderDetail extends wepy.page {
+    config = {
+      navigationBarTitleText: '实名认证'
+    }
+    mixins = [ConfigMixin]
+    components = {
+      uploader: UploadImageComponent,
+      uploader2: UploadImageComponent
+    }
+    data = {
+      info: null,
+      realname: '',
+      card_no: '',
+      phone: '',
+      code: '',
+      card_image1: '',
+      card_image2: '',
+      isCountDown: false,
+      countDownNum: 0
+    }
+    methods ={
+      bindKeyInput(e) {
+        const { value } = e.detail
+        const { name } = e.target.dataset
+        this[name] = value
+      },
+      bindFormSubmit(e) {
+        const URL = '/card/user-verify'
+        let params = Object.assign({}, e.detail.value)
+        if (this.validate(params) === false) {
+          return false
+        }
+        this.$parent.post(URL, params).then(res => {
+          console.log(res)
+          const { code, message } = res
+          if (code === 0) {
+            wepy.navigateTo({url: `more-certification`})
+          } else {
+            wepy.showModal({
+              title: '温馨提示',
+              content: message,
+              showCancel: false,
+              confirmColor: '#1875f0'
+            })
+          }
+        })
+      },
+      formReset() {
+        console.log('form发生了reset事件')
+      },
+      getCode() {
+        const { phone } = this.data
+        if (phone === '') {
+          wepy.showModal({
+            title: '温馨提示',
+            content: '手机号码不能为',
+            showCancel: false,
+            confirmColor: '#1875f0'
+          })
+        } else {
+          if (/^1[3|4|5|7|8]\d{9}$/.test(phone) === false) {
+            wepy.showModal({
+              title: '温馨提示',
+              content: '请输入正确手机号码',
+              showCancel: false,
+              confirmColor: '#1875f0'
+            })
+          } else {
+            this.isCountDown = true
+            this.countDownNum = 60
+            this.$apply()
+            this.countDown(this)
+          }
+        }
+      },
+      resetFormFun() {
+        this.info['user_verify_status'] = 0
+      }
+    }
+    // 简易表单验证 -- 需优化
+    validate(data) {
+      let message = ''
+      for (let k in data) {
+        if (data[k] === '') {
+          switch (k) {
+            case 'phone':
+              message = '手机号码不能为'
+              break
+            case 'realname':
+              message = '姓名不能为空'
+              break
+            case 'card_no':
+              message = '身份证号不能为空'
+              break
+            case 'card_image1':
+              message = '请上传身份证正面'
+              break
+            case 'card_image2':
+              message = '请上传身份证反面'
+              break
+          }
+        }
+      }
+
+      if (message === '') {
+        if (/^1[3|4|5|7|8]\d{9}$/.test(data['phone']) === false) {
+          message = '请输入正确手机号码'
+        }
+        if (/^\d{15}|\d{18}$/.test(data['card_no']) === false) {
+          message = '请输入正确身份证号'
+        }
+      }
+
+      if (message !== '') {
+        wepy.showModal({
+          title: '温馨提示',
+          content: message,
+          showCancel: false,
+          confirmColor: '#1875f0'
+        })
+      }
+      return !message
+    }
+    onLoad() {
+      this.getInfo()
+    }
+    getInfo() {
+      const URL = '/card/user-info'
+      wepy.showLoading({mask: true})
+      this.$parent.get(URL, { expand: 'verifyInfo' }).then(res => {
+        const { code, data, message } = res
+        if (code === 0) {
+          this.info = data
+        } else {
+          wepy.showModal({
+            title: '温馨提示',
+            content: message,
+            showCancel: false,
+            confirmColor: '#1875f0',
+            success: function(res) {
+              wepy.navigateBack()
+            }
+          })
+        }
+        this.$apply()
+        wepy.hideLoading()
+      })
+    }
+
+    countDown(self) {
+      let { countDownNum } = this.data
+      if (countDownNum <= 0) {
+        this.isCountDown = false
+        this.$apply()
+        return
+      }
+      this.countDownNum = --countDownNum
+      this.$apply()
+      setTimeout(() => {
+        this.countDown()
+      }, 1000)
+    }
+  }
+</script>

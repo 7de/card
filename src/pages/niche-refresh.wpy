@@ -1,0 +1,85 @@
+<style lang="scss">
+</style>
+
+<template>
+  <form class="tabbar" report-submit="{{true}}" bindsubmit="bindFormSubmit">
+    <scroll-view class="tabbar__panel" scroll-y="{{true}}" style="height:{{windowHeight}}px">
+      <view class="panel panel_info">
+        <view class="panel__bd">
+          <text class="panel__title">什么是刷新商机？</text>
+          <text class="panel__desc" space="ensp">刷新商机是指用户对自己已发布的商机进行刷新的操作。</text>
+          <text class="panel__desc" space="ensp">刷新后，商机可以重新回到商机中心第一位，但同时会被最新刷新或者最新发布的商机给覆盖。</text>
+          <text class="panel__desc" space="ensp">刷新费用：1元/一次。</text>
+        </view>
+      </view>
+      <radio-group class="cells" bindchange="bindRadioChange">
+        <view class="cell">
+          <view class="cell__bd">支付方式</view>
+        </view>
+        <label class="form-cell">
+          <view class="cell__hd"><i class="iconfont icon-wxpay"></i></view>
+          <view class="cell__bd">微信支付</view>
+          <view class="cell__ft"><radio value="wxpay" checked="{{true}}" color="#1875f0" /></view>
+        </label>
+        <label class="form-cell">
+          <view class="cell__hd"><i class="iconfont icon-ybpay"></i></view>
+          <view class="cell__bd">云币支付</view>
+          <view class="cell__ft"><radio value="ybpay" color="#1875f0" /></view>
+        </label>
+      </radio-group>
+    </scroll-view>
+    <view class="paybar">
+      <view class="paybar__content">
+        支付总价：
+        <view class="paybar__price" wx:if="{{payType === 'wxpay'}}">
+          ￥<text class="paybar__price__num">{{totalMoney}}</text>
+        </view>
+        <view class="paybar__price" wx:elif="{{payType === 'ybpay'}}">
+          <text class="paybar__price__num">{{totalMoney * 10}}云币</text>
+        </view>
+      </view>
+      <button class="paybar__btn" data-type="{{payType}}" data-value="{{orderID}}" type="primary" formType="submit">确认支付</button>
+    </view>
+  </form>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  export default class NicheRefresh extends wepy.page {
+    config = {
+      navigationBarTitleText: '刷新商机'
+    }
+    mixins = [ConfigMixin]
+    data = {
+      orderID: 0,
+      payType: 'wxpay',
+      totalMoney: 0.00
+    }
+    methods = {
+      bindRadioChange(e) {
+        const { value } = e.detail
+        this.payType = value
+      }
+    }
+    onLoad(options) {
+      const { orderID } = options
+      this.getOrderDetail(orderID)
+    }
+    getOrderDetail(orderID) {
+      wepy.showLoading({ mask: true })
+      const URL = `/order/${orderID}`
+      this.$parent.get(URL).then(res => {
+        const { code, data, message } = res
+        if (code === 0 && data) {
+          this.orderID = orderID
+          this.totalMoney = parseFloat(data['total_money'] / 100).toFixed(2)
+        } else {
+          this.onFetchError(message)
+        }
+        wepy.hideLoading()
+        this.$apply()
+      })
+    }
+  }
+</script>

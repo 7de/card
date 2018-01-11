@@ -1,0 +1,17 @@
+.panel {
+  display: block;
+  background-color: #ffffff;
+  position: relative;
+  &.card {
+    border-radius: 5px;
+  }
+  &__desc {
+    color: #737373;
+    font-size: 28rpx;
+    line-height: 2;
+  }
+}
+
+@import './panel_info.scss';
+@import './panel_time-line.scss';
+@import './panel_niche.scss';

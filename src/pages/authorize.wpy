@@ -1,0 +1,29 @@
+<style lang="scss">
+  
+</style>
+
+<template>
+  <view class="body">
+    <view class="btn-area">
+      <button type="primary" open-type="getUserInfo" bindgetuserinfo="getUserInfo">重新授权</button>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  export default class Authorize extends wepy.page {
+    config = {
+      navigationBarTitleText: '用户授权'
+    }
+    methods = {
+      getUserInfo(e) {
+        const { errMsg } = e.detail
+        if (errMsg === 'getUserInfo:ok') {
+          this.$parent.globalData.receiving = false
+          wx.navigateBack()
+        }
+      }
+    }
+  }
+</script>

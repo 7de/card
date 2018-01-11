@@ -1,0 +1,19 @@
+$color-default: #1875f0;
+button[type="primary"] {
+  background-color: $color-default;
+  &[plain] {
+    color: $color-default;
+    border: 1px solid $color-default;
+    background-color: white;
+  }
+}
+
+$color-hover: rgba(24, 117, 240, 0.6);
+.button-hover[type="primary"] {
+  background-color: $color-hover;
+  &[plain] {
+    color: $color-hover;
+    border: 1px solid $color-hover;
+    background-color: white;
+  }
+}

@@ -1,0 +1,15 @@
+.cells_form {
+  margin: 20rpx 30rpx;
+  font-size: 30rpx;
+  border-radius: 5px;
+  &::before,
+  &::after {
+    border-radius: 10px;
+  }
+  .form-cell {
+    &::before {
+      left: 18rpx;
+      right: 18rpx;
+    }
+  }
+}

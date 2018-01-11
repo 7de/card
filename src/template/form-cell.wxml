@@ -1,0 +1,8 @@
+<template name="form-cell">
+  <view class="form-cell">
+    <view class="form-cell__hd">{{label}}<text class="text-required" wx:if="{{required}}"></text></view>
+    <view class="form-cell__bd">
+      <input type="text" class="form-cell__ctrl" bindinput="bindKeyInput('{{field}}')" name="{{field}}" placeholder="请输入名字" maxlength="{{maxlength}}" value="{{value}}"/>
+    </view>
+  </view>
+</template>

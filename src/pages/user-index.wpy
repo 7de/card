@@ -1,0 +1,142 @@
+<style lang="scss">
+</style>
+
+<template>
+  <form class="page-card" wx:if="{{isCreate === 1}}" report-submit="{{true}}" bindsubmit="bindFormSubmit">
+    <import src="../template/business-card.wxml"/>
+    <template is="business-card" data="{{info, template, host, play}}"/>
+    <view class="card">
+      <view class="grids grids_avg-4">
+        <button class="grid" data-url="user-qr-code" formType="submit">
+          <image class="grid__icon" src="../images/icon_code.png"/>
+          <text class="grid__label">名片码</text>
+        </button>
+        <button class="grid" open-type="share" formType="submit">
+          <image class="grid__icon" src="../images/icon_share.png"/>
+          <text class="grid__label">发送名片</text>
+        </button>
+        <button class="grid" data-url="user-create" formType="submit">
+          <image class="grid__icon" src="../images/icon_edit.png"/>
+          <text class="grid__label">编辑名片</text>
+        </button>
+        <button class="grid" data-url="user-settings" formType="submit">
+          <image class="grid__icon" src="../images/icon_lock.png"/>
+          <text class="grid__label">隐私设置</text>
+        </button>
+      </view>
+      <view class="cells__title">
+        <i class="iconfont icon-crown"></i>
+        专享服务
+      </view>
+      <view class="grids grids_avg-3">
+        <button class="grid" data-url="user-product-card" formType="submit">
+          <image class="grid__icon" src="../images/icon_paper-card.png"/>
+          <text class="grid__label">名片模版定制</text>
+        </button>
+        <button class="grid" data-url="user-product-video" formType="submit">
+          <image class="grid__icon" src="../images/icon_paper-video.png"/>
+          <text class="grid__label">名片视频定制</text>
+        </button>
+        <button class="grid" data-url="user-product-news" formType="submit">
+          <image class="grid__icon" src="../images/icon_paper-plane.png"/>
+          <text class="grid__label">发布商机</text>
+        </button>
+      </view>
+    </view>
+  </form>
+  <form class="body" wx:if="{{isCreate === 2}}" report-submit="{{true}}" bindsubmit="bindFormSubmit">
+    <view class="page-error">
+      <image class="page-error__image" src="../images/business_card.png" style="width:441rpx;height:490rpx;"></image>
+      <view class="ul-area">
+        <view class="ul">
+          <text class="li">名片侠，高效环保</text>
+          <text class="li">支持微信内快速分享</text>
+        </view>
+      </view>
+      <text class="page-error__title">您还没有个人名片，马上创建一个吧</text>
+      <view class="page-error__btn-area">
+        <button class="round" type="primary" data-url="user-create" formType="submit">快速创建名片</button>
+      </view>
+    </view>
+  </form>
+  <video-player></video-player>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import RestructureMixin from '../mixins/restructure'
+  import Card from '@Components/business-card'
+  import VideoPlayer from '@Components/video-player'
+  export default class UserIndex extends wepy.page {
+    config = {
+      navigationBarTitleText: '我的名片'
+    }
+    mixins = [RestructureMixin, ConfigMixin]
+    components = {
+      card: Card,
+      'video-player': VideoPlayer
+    }
+    data = {
+      isCreate: 0,
+      info: null,
+      template: {}
+    }
+    methods = {
+      share() {
+
+      },
+      play() {
+        this.$invoke('video-player', 'show')
+      },
+      tips() {
+        wepy.showModal({
+          title: '温馨提示',
+          content: '功能还在开发中，敬请期待',
+          showCancel: false,
+          confirmColor: '#1875f0'
+        })
+      }
+    }
+    onShow() {
+      this.$invoke('video-player', 'hide')
+      this.getCard()
+    }
+    getCard() {
+      wepy.showLoading()
+      this.$parent.get('/card/my-card').then(res => {
+        let { code, data } = res
+        if (code === 0) {
+          this.info = data
+          this.$parent.getTemplateById(data.template_id).then(template => {
+            this.template = template
+            this.$apply()
+          })
+          // 缓存个人信息
+          wepy.setStorageSync('cardInfo', data)
+          this.isCreate = 1
+          this.$invoke('video-player', 'set', this.host + data.video_url)
+
+          // 动态设置导航条
+          wepy.setNavigationBarColor({
+            frontColor: '#ffffff',
+            backgroundColor: '#1875f0'
+          })
+          this.$apply()
+        } else {
+          this.isCreate = 2
+        }
+        this.$apply()
+        wepy.hideLoading()
+      })
+    }
+    onShareAppMessage(res) {
+      const path = `user-share?scene=${this.info.card_key}`
+      console.log(`分享地址：${path}`)
+      return {
+        title: '我的名片，请惠存',
+        path: path
+      }
+    }
+  }
+</script>

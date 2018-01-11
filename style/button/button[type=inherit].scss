@@ -1,0 +1,11 @@
+button[type="inherit"] {
+  background-color: inherit;
+  font-size: inherit;
+  color: inherit;
+  text-align: inherit;
+  border-radius: inherit;
+  line-height: inherit;
+  &::after {
+    display: none;
+  }
+}

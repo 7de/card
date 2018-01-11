@@ -1,0 +1,17 @@
+<template name="folder-list">
+  <text class="cells__title" id="{{anchor === '#' ? 'AA' : anchor}}" wx:if="{{anchor}}">{{anchor}}</text>
+  <view class="cells cells_card">
+    <block wx:for="{{list}}" wx:key="folder-list">
+      <button class="cell" data-url="/pages/folder-detail?card_key={{item.info.card_key}}" formType="submit">
+        <view class="cell__hd">
+          <image class="cell_card__image" src="{{host}}{{item.info.card_image}}"/>
+        </view>
+        <view class="cell__bd">
+          <view class="cells_card__title">{{item.info.name}}</view>
+          <view class="cells_card__sub-title">{{item.info.position}}</view>
+          <view class="cells_card__sub-title">{{item.info.company}}</view>
+        </view>
+      </button>
+    </block>
+  </view>
+</template>

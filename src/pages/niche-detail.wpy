@@ -1,0 +1,120 @@
+<style lang="scss">
+  
+</style>
+
+<template>
+  <form report-submit="{{true}}" bindsubmit="bindFormSubmit" wx:if="{{!searchLoading}}">
+    <view class="panel panel_niche">
+      <view class="panel__bd">
+        <view class="media-box media-box_text">
+          <view class="media-box__hd">
+              <image class="media-box__thumb round" src="{{item['posterInfo']['logo_url']}}" />
+              <i class="iconfont icon-v-circle" wx:if="{{item['posterInfo']['user_verify_status'] === 1}}"></i>
+            </view>
+          <view class="media-box__title">{{item.title}}</view>
+          <view class="media-box__sub-title">
+            {{item['poster_name']}} | {{item['poster_company']}}
+          </view>
+          <view class="media-box__content">{{item['content']}}</view>
+          <view class="media-box__info" wx:if="{{item['images'].length > 0}}">
+            <repeat for="{{item['images']}}" item="imageUrl">
+              <button class="media-box__info__photo" type="inherit" data-type="previewImage" data-value="{{imageUrl}}" data-urls="{{item['images']}}" formType="submit">
+                <image mode="aspectFill" src="{{imageUrl}}" />
+              </button>
+            </repeat>
+          </view>
+          <view class="media-box__info">
+            <view class="media-box__info__meta">发布时间：</view>
+            <view class="media-box__info__meta">{{item['created_at']}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <movable-area class="fix-area">
+      <movable-view class="fix-area__btn " y="450" out-of-bounds="{{false}}" direction="vertical">
+        <button type="primary" data-type="refresh" data-id="{{item.id}}" formType="submit" wx:if="{{userID === item['card_user_id']}}"><i class="iconfont icon-refresh"></i> 刷新商机</button>
+        <button type="primary" data-url="user-share?scene={{item['posterInfo']['card_key']}}" formType="submit" wx:else>查看TA的名片</button>
+      </movable-view>
+    </movable-area>
+  </form>
+  <view class="loadmore" wx:if="{{searchLoading}}">
+    <i class="icon-loading"></i>
+    <text class="loadmore__tips">正在加载</text>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import moment from 'moment'
+  export default class NicheDetail extends wepy.page {
+    config = {
+      navigationBarTitleText: '商机中心'
+    }
+
+    mixins = [ConfigMixin]
+
+    data = {
+      userID: '',
+      item: {},
+      searchLoading: false // 加载中
+    }
+
+    methods = {
+      bindFormSubmit(e) {
+        const { dataset } = e.detail.target
+        switch (dataset.type) {
+          case 'refresh':
+            wepy.showLoading({ mask: true })
+            const URL = `/order/refresh-info/${dataset.id}`
+            this.$parent.post(URL).then(res => {
+              const { code, data, message } = res
+              if (code === 0 && data) {
+                wepy.navigateTo({
+                  url: `niche-refresh?orderID=${data.id}`
+                })
+              } else {
+                wepy.showModal({
+                  title: '温馨提示',
+                  content: message,
+                  showCancel: false,
+                  confirmColor: '#1875f0'
+                })
+              }
+              wepy.hideLoading()
+            })
+            break
+        }
+      }
+    }
+
+    onLoad (options) {
+      const { id } = options
+      const { userID } = this.$parent.globalData
+      this.userID = userID
+      this.getNicheDetail(id)
+    }
+    getNicheDetail(id) {
+      const URL = `/business-infos/${id}`
+      this.searchLoading = true
+      this.$parent.get(URL).then(res => {
+        const { code, message } = res
+        let { data } = res
+        if (code === 0 && data) {
+          let images = data['images'].split('|')
+          images.forEach((image, i, imageArr) => {
+            imageArr[i] = this.host + image
+          })
+          data['images'] = images
+          data['created_at'] = moment(data['created_at'] * 1000).format('YYYY年MM月DD日 HH:mm')
+          data['posterInfo']['logo_url'] = data['posterInfo']['logo_url'] ? this.host + data['posterInfo']['logo_url'] : ''
+          this.item = data
+        } else {
+          this.onFetchError(message)
+        }
+        this.searchLoading = false
+        this.$apply()
+      })
+    }
+  }
+</script>

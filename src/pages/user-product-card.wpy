@@ -1,0 +1,162 @@
+<style lang="scss">
+  .body {
+    width: 750rpx;
+  }
+  .body>image {
+      width: 750rpx;
+      height: 360rpx;
+    }
+</style>
+
+<template>
+  <view class="body">
+    <image src="../images/product-card-1.jpg"></image>
+
+    <form report-submit="{{true}}" bindsubmit="bindFormSubmit" bindreset="formReset">
+      <view class="cells">
+        <view class="form-cell">
+          <view class="form-cell__hd">类别</view>
+          <view class="form-cell__bd">
+            <picker bindchange="pickerChange" range="{{typeArray}}" class="form-cell__ctrl" type="text" name="type" value="{{typeValue}}">
+              <view class="text-gray" wx:if="{{typeValue === ''}}">请选择定制类别</view>
+              <view wx:else>{{typeArray[typeValue - 1]}}</view>
+            </picker>
+          </view>
+        </view>
+      </view>
+      
+      <view class="cells">
+        <view class="form-cell">
+          <view class="form-cell__bd">
+            <textarea class="form-cell__ctrl" name="describe" data-name="describe" maxlength="150" value="{{describe}}" bindblur="cache" placeholder="请填写您的名片需求，150字以内"></textarea>
+          </view>
+        </view>
+        <uploader name="urls" count="6" />
+      </view>
+
+      <view class="cells__title">
+        联系方式<text class="text-required"></text>
+      </view>
+      <view class="cells">
+        <view class="form-cell">
+          <view class="form-cell__hd">联系人</view>
+          <view class="form-cell__bd">
+            <input class="form-cell__ctrl" name="contact_username" data-name="contact_username" placeholder="请输入姓名" type="text" maxlength="11" value="{{contact_username}}" bindblur="cache" />
+          </view>
+        </view>
+        <view class="form-cell">
+          <view class="form-cell__hd">联系电话</view>
+          <view class="form-cell__bd">
+            <input class="form-cell__ctrl" name="contact_phone" data-name="contact_phone" placeholder="请输入电话号码" type="number" maxlength="11" value="{{contact_phone}}" bindblur="cache" />
+          </view>
+        </view>
+      </view>
+
+      <view class="btn-area">
+        <button type="primary" formType="submit">立即订制</button>
+      </view>
+      
+    </form>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import UploaderComponent from '@Components/uploader'
+  export default class UserProductCard extends wepy.page {
+    config = {
+      navigationBarTitleText: '模版定制'
+    }
+    mixins = [ConfigMixin]
+    components = {
+      uploader: UploaderComponent
+    }
+    data = {
+      typeArray: ['纸质名片定制', '需求名片定制'],
+      typeValue: '',
+      urls: '',
+      describe: '',
+      contact_username: '',
+      contact_phone: ''
+    }
+    methods = {
+      pickerChange(e) {
+        this.typeValue = +e.detail.value + 1 // 1: 纸质名片定制, 2: 需求名片定制
+      },
+      bindFormSubmit(e) {
+        const URL = '/demand/template-demand'
+        let params = Object.assign({}, e.detail.value)
+        if (this.validate(params) === false) {
+          return false
+        }
+        this.$parent.post(URL, params).then(res => {
+          console.log(res)
+          const { code, data, message } = res
+          if (code === 0) {
+            wepy.navigateTo({url: `more-order-detail?id=${data.id}`})
+          } else {
+            wepy.showModal({
+              title: '温馨提示',
+              content: message,
+              showCancel: false,
+              confirmColor: '#1875f0'
+            })
+          }
+        })
+      },
+      formReset(e) {
+        wepy.navigateTo({url: 'more-order-list'})
+      },
+      cache(e) { // 缓存表单数据
+        const field = e.target.dataset.name
+        this[field] = e.detail.value
+      }
+    }
+    onRoute() {
+      this.setData(this.data)
+      this.$broadcast('refresh')
+    }
+    // 简易表单验证 -- 需优化
+    validate(data) {
+      let message = ''
+      for (let k in data) {
+        if (data[k] === '') {
+          switch (k) {
+            case 'contact_phone':
+              message = '联系人电话不能为空'
+              break
+            case 'contact_username':
+              message = '联系人不能为空'
+              break
+            case 'describe':
+              message = '名片需求不能为空'
+              break
+            case 'type':
+              message = '请选择定制类别'
+              break
+            case 'urls':
+              message = '请上传图片'
+              break
+          }
+        }
+      }
+
+      if (message === '') {
+        if (/^1[3|4|5|7|8]\d{9}$/.test(data['contact_phone']) === false) {
+          message = '请输入正确手机号码'
+        }
+      }
+
+      if (message !== '') {
+        wepy.showModal({
+          title: '温馨提示',
+          content: message,
+          showCancel: false,
+          confirmColor: '#1875f0'
+        })
+      }
+      return !message
+    }
+  }
+</script>

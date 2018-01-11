@@ -1,0 +1,195 @@
+<style lang="scss">
+  .panel_card-info {
+    margin: 20rpx 30rpx;
+    border: 1px solid #e5e5e5;
+    border-radius: 5px;
+    overflow: hidden;
+    image {
+      width: 100%;
+      height: 100%;
+    }
+    .panel__hd {
+      height: 410rpx;
+      position: relative;
+      &::after {
+        content: " ";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        height: 1px;
+        border-bottom: 1px solid #e5e5e5;
+        color: #e5e5e5;
+        -webkit-transform-origin: 0 100%;
+        transform-origin: 0 100%;
+        -webkit-transform: scaleY(0.5);
+        transform: scaleY(0.5);
+        z-index: 2;
+      }
+    }
+    .panel__bd {
+      padding: 30rpx;
+      font-size: 28rpx;
+      text-align: center;
+    }
+    .panel__title {
+      color: #111111;
+      font-size: 1.5em;
+    }
+    .panel__desc {
+      color: #333333;
+      font-size: 1em;
+      line-height: 1.4;
+    }
+    .panel__title + .panel__desc,
+    .panel__desc + .panel__desc {
+      margin-top: 10rpx;
+    }
+    .panel__ft {
+      padding: 30rpx;
+      font-size: 24rpx;
+      position: relative;
+      &::before {
+        content: " ";
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        height: 1px;
+        border-top: 1px solid #e5e5e5;
+        color: #e5e5e5;
+        -webkit-transform-origin: 0 0;
+        transform-origin: 0 0;
+        -webkit-transform: scaleY(0.5);
+        transform: scaleY(0.5);
+        z-index: 2;
+      }
+    }
+  }
+</style>
+
+<template>
+  <form class="page-card" report-submit="{{true}}" bindsubmit="bindFormSubmit">
+    <view class="panel panel_card-info">
+      <view class="panel__hd" wx:if="{{info && info.card_image}}">
+        <image mode="aspectFit" src="{{host}}{{info.card_image}}"/>
+      </view>
+      <view class="panel__bd">
+        <view class="panel__title">{{info.name}}</view>
+        <view class="panel__desc">{{info.position}}</view>
+        <view class="panel__desc">{{info.company}}</view>
+      </view>
+      <view class="panel__ft">
+        <view class="panel__desc">电话： {{info.mobile}}</view>
+        <view class="panel__desc">地址： {{info.province_name}}{{info.city_name}}{{info.area_name}}{{info.address}}</view>
+      </view>
+    </view>
+
+    <view class="grids grids_avg-4 card" wx:if="{{info.is_self}}">
+      <button class="grid" data-type="postCard" data-value="{{info.id}}" formType="submit">
+        <image class="grid__icon" src="../images/icon_send.png"/>
+        <text class="grid__label">回传名片</text>
+      </button>
+      <button class="grid" open-type="share" formType="submit">
+        <image class="grid__icon" src="../images/icon_share.png"/>
+        <text class="grid__label">分享名片</text>
+      </button>
+      <button class="grid" @tap="unCollect" formType="submit">
+        <image class="grid__icon" src="../images/icon_collection-cancle.png"/>
+        <text class="grid__label">取消收藏</text>
+      </button>
+      <button class="grid" data-url="log-list?id={{info.id}}" formType="submit">
+        <image class="grid__icon" src="../images/icon-log.png"/>
+        <text class="grid__label">商谈记录</text>
+      </button>
+    </view>
+
+    <view class="grids grids_avg-3 card" wx:else>
+      <button class="grid" open-type="share" formType="submit">
+        <image class="grid__icon" src="../images/icon_share.png"/>
+        <text class="grid__label">分享名片</text>
+      </button>
+      <button class="grid" @tap="unCollect" formType="submit">
+        <image class="grid__icon" src="../images/icon_collection-cancle.png"/>
+        <text class="grid__label">删除名片</text>
+      </button>
+      <button class="grid" data-url="log-list?id={{info.id}}" formType="submit">
+        <image class="grid__icon" src="../images/icon-log.png"/>
+        <text class="grid__label">商谈记录</text>
+      </button>
+    </view>
+  </form>
+  <video-player></video-player>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import ConfigMixin from '../mixins/config'
+  import RestructureMixin from '../mixins/restructure'
+  import VideoPlayer from '@Components/video-player'
+  export default class FolderDetail extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: '#1875f0',
+      navigationBarTitleText: '',
+      navigationBarTextStyle: '#ffffff'
+    }
+    mixins = [RestructureMixin, ConfigMixin]
+    components = {
+      'video-player': VideoPlayer
+    }
+    data = {
+      info: {}
+    }
+    methods = {
+      unCollect() {
+        wepy.showModal({
+          title: '温馨提示',
+          content: '是否确认移除此名片？',
+          confirmColor: '#1875f0',
+          success: res => {
+            const { confirm } = res
+            if (confirm) {
+              const { id } = this.info
+              this.$parent.delete(`/card/${id}`).then(res => {
+                wepy.navigateBack()
+              })
+            }
+          }
+        })
+      },
+      play() {
+        this.$invoke('video-player', 'set', this.host + this.info.video_url)
+        this.$invoke('video-player', 'show')
+      }
+    }
+
+    onLoad(option) {
+      this.getCardInfo(option.card_key)
+    }
+
+    getCardInfo(cardKey) {
+      const URL = `/card/share/${cardKey}`
+      wepy.showLoading()
+      this.$parent.get(URL).then(res => {
+        const { data } = res
+        const { info } = this.restructure(data)
+        this.info = info
+        this.$apply()
+        // 动态设置导航条
+        wepy.setNavigationBarTitle({ title: data.name })
+        wepy.hideLoading()
+      })
+    }
+
+    onShareAppMessage() {
+      const { info, host } = this.data
+      const path = `/pages/user-share?scene=${info['card_key']}`
+      const imageUrl = host + info.card_image
+      console.log(`分享地址：${path}`)
+      return {
+        path,
+        imageUrl
+      }
+    }
+  }
+</script>

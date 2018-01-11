@@ -1,0 +1,196 @@
+<style lang="scss">
+  page {
+    overflow: hidden
+  }
+  .body {
+    padding-bottom: 80rpx;
+    box-sizing:border-box;
+  }
+</style>
+
+<template>
+  <form report-submit="{{true}}" bindsubmit="bindFormSubmit">
+    <scroll-view scroll-y="{{!isShow}}" class="body" style="height: {{windowHeight}}px">
+      <import src="../template/business-card.wxml"/>
+      <template is="business-card" data="{{info, template, host}}"/>
+      <view class="grids grids_avg-3 card">
+        <button class="grid" @tap="saveToPhone()" formType="submit">
+          <image class="grid__icon" src="../images/icon_save.png"/>
+          <text class="grid__label">存入手机</text>
+        </button>
+        <button class="grid" data-type="postCard" data-value="{{info.id}}" formType="submit">
+          <image class="grid__icon" src="../images/icon_send.png"/>
+          <text class="grid__label">回传名片</text>
+        </button>
+        <button class="grid" @tap="unCollect()" formType="submit" wx:if="{{info.hasCard}}">
+          <image class="grid__icon" src="../images/icon_collection-cancle.png"/>
+          <text class="grid__label">取消收藏</text>
+        </button>
+        <button class="grid" @tap="collect()" formType="submit" wx:else>
+          <image class="grid__icon" src="../images/icon_collection.png"/>
+          <text class="grid__label">添加收藏</text>
+        </button>
+      </view>
+      <view class="panel panel_info card" wx:if="{{info.urls.length > 0 || info.introduction}}">
+        <view class="panel__bd">
+          <repeat for="{{info.urls}}" item="url">
+            <image class="panel__image" mode="aspectFill" src="{{url}}" @tap="previewImage({{url}})" />
+          </repeat>
+          <text class="panel__desc" space="ensp" wx:if="{{info.introduction}}">{{info.introduction}}</text>
+        </view>
+      </view>
+      <view class="btn-area">
+        <button type="primary" data-url="user-create" formType="submit" wx:if="{{!myKey}}">创建我的名片</button>
+      </view>
+    </scroll-view>
+  </form>
+  <footer></footer>
+  <video-player :isShow.sync="isShow"></video-player>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import CardComponent from '@Components/business-card'
+  import VideoPlayerComponent from '@Components/video-player'
+  import FooterComponent from '@Components/footer'
+  import ConfigMixin from '../mixins/config'
+  import RestructureMixin from '../mixins/restructure'
+  export default class UserShare extends wepy.page {
+    config = {
+      navigationBarTitleText: '名片侠科技'
+    }
+    components = {
+      card: CardComponent,
+      'video-player': VideoPlayerComponent,
+      footer: FooterComponent
+    }
+    mixins = [ConfigMixin, RestructureMixin]
+    data = {
+      scene: '',
+      myName: '',
+      myKey: '',
+      currentTab: 0,
+      info: {},
+      template: {},
+      isShow: false
+    }
+    methods = {
+      saveToPhone() {
+        const { info } = this.data
+        wx.addPhoneContact({
+          nickName: info.name,
+          firstName: info.name,
+          mobilePhoneNumber: info.mobile,
+          weChatNumber: info.wechat_id,
+          organization: info.company,
+          title: info.position,
+          email: info.email,
+          remark: '名片来自云端私募会'
+        })
+      },
+      collect() {
+        const { info } = this.data
+        this.$parent.post('/card/collect', { card_key: info.card_key }).then(res => {
+          this.info.hasCard = true
+          this.$apply()
+        })
+      },
+      unCollect() {
+        const { info } = this.data
+        this.$parent.delete(`/card/${info.id}`).then(res => {
+          this.info.hasCard = false
+          this.$apply()
+        })
+      },
+      shareMyCard() {
+        wepy.showModal({
+          title: '温馨提示',
+          content: '你还没有名片，现在创建名片？',
+          confirmColor: '#1875f0',
+          success: (res) => {
+            console.log(res)
+            if (res.confirm) {
+              wepy.navigateTo({
+                url: 'user-create'
+              })
+            }
+          }
+        })
+      },
+      bindSendMyCard() {
+        const { info, myKey } = this.data
+        if (info['card_key'] === myKey) {
+          wepy.showModal({
+            title: '温馨提示',
+            content: '此名片是您所有，无需回传',
+            showCancel: false,
+            confirmColor: '#1875f0'
+          })
+        } else {
+          const URL = `/order/post-card/${info.id}`
+          this.$parent.post(URL).then(res => {
+            const { code, data, message } = res
+            if (code === 0) {
+              wepy.navigateTo({url: `library-payment?orderID=${data.id}&orderType=1`})
+            } else {
+              wepy.showModal({
+                title: '温馨提示',
+                content: message,
+                showCancel: false,
+                confirmColor: '#1875f0'
+              })
+            }
+          })
+        }
+      },
+      play() {
+        this.$invoke('video-player', 'show')
+      },
+      previewImage(current) {
+        const { urls } = this.info
+        wepy.previewImage({ current, urls })
+      }
+    }
+    onLoad(options) {
+      var scene = decodeURIComponent(options.scene)
+      this.scene = scene
+      this.getMycard(scene)
+    }
+    getMycard(cardKey) {
+      wepy.showLoading({mask: true})
+      this.$parent.get('/card/my-card').then(res => {
+        const { code, data } = res
+        if (code === 0) {
+          this.myName = data.name
+          this.myKey = data.card_key
+          this.$apply()
+        }
+        this.$parent.get(`/card/share/${cardKey}`).then(res => {
+          const { data } = res
+          let { info, template } = this.restructure(data)
+          info['urls'] = info.image ? info.image.split('|') : []
+          info['urls'].forEach((url, index, arr) => {
+            arr[index] = this.host + url
+          })
+          this.info = info
+          this.template = template
+          this.$invoke('video-player', 'set', this.host + data.video_url)
+          this.$apply()
+          wepy.hideLoading()
+        })
+      })
+    }
+    onShareAppMessage() {
+      const { scene, info, myKey, myName, host } = this.data
+      const title = info['card_key'] === myKey ? '我的名片，请惠存' : `${myName}给您分享的名片，请惠存`
+      const path = `/pages/user-share?scene=${scene}`
+      const imageUrl = host + info.card_image
+      console.log(`分享地址：${path}`)
+      return {
+        title,
+        path,
+        imageUrl
+      }
+    }
+  }
+</script>
