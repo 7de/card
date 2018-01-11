@@ -9,6 +9,7 @@ AppSecret：9d00f182766070376cb924dfc6ce85ac
 <!-- 开发文档 -->
 1.https://mp.weixin.qq.com/debug/wxadoc/dev
 2.https://segmentfault.com/a/1190000007580866
+3.基于wepy框架
 
 <!-- 备注 -->
 1.使用微信开发者工具新建项目，本地开发选择dist目录。
