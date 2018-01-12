@@ -1,29 +1,41 @@
 <style lang="scss">
-  .business-card__upload {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(0, 0, 0, .6);
-    text-align: center;
-    .iconfont {
-      color: #ffffff;
-      font-size: 18rpx;
-      line-height: 34rpx;
+  .business-card__panel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  .business-card__logo {
+    border: 1px solid #d9d9d9;
+    box-sizing: border-box;
+    &__label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      text-align: center;
+      cover-image {
+        display: inline-block;
+        width: 20rpx;
+        height: 20rpx;
+      }
     }
   }
 </style>
 
 <template>
-  <view class="business-card" style="{{cardStyle && cardStyle.card}}">
-    <canvas canvasId="businessCardCanvas" style="{{cardStyle && cardStyle.card}}"></canvas>
-    <view class="business-card__logo" @tap="chooseLogo()" style="{{cardStyle && cardStyle.logo}}">
-      <image class="business-card__image" src="{{host}}{{info.logo_url}}" wx:if="{{info && info.logo_url}}"></image>
-      <view class="business-card__upload"><i class="iconfont icon-camera"></i></view>
-    </view>
-    <!-- 音频播放 -->
-    <slot name="video"></slot>
-  </view>
+    <canvas canvasId="businessCardCanvas" class="business-card" style="{{cardTemplate && cardTemplate.card}}">
+      <cover-view class="business-card__panel">
+        <cover-view class="business-card__logo" @tap="chooseLogo()" style="{{cardTemplate && cardTemplate.logo}}">
+          <cover-view class="business-card__logo__label">
+            <cover-image src="../images/icon-camera.png" />
+          </cover-view>
+        </cover-view>
+        <!-- 音频播放 -->
+        <slot name="video"></slot>
+        <slot name="mask"></slot>
+      </cover-view>
+    </canvas>
 </template>
 
 <script>
@@ -40,7 +52,8 @@ export default class BussinessCardComponent extends wepy.component {
   mixins = [ConfigMixin]
 
   data = {
-    cardStyle: {},
+    avatarUrl: '',
+    cardTemplate: {},
     keyMap: {
       name: { label: '', def: '我的名字' },
       company: { label: '', def: '公司' },
@@ -56,7 +69,7 @@ export default class BussinessCardComponent extends wepy.component {
       this.info[i] = v
     },
     setTemplate(data) {
-      this.cardStyle = data
+      this.cardTemplate = data
     },
     chooseLogo() {
       const app = this.$parent.$parent
@@ -68,6 +81,7 @@ export default class BussinessCardComponent extends wepy.component {
           app.uploadFile(uploadFile).then(filePath => {
             this.info['logo_url'] = filePath
             this.$apply()
+            wepy.hideLoading()
           })
         }
       })
@@ -76,10 +90,32 @@ export default class BussinessCardComponent extends wepy.component {
   }
 
   watch = {
-    info (curVal) {
+    info (curVal, oldVal) {
+      if (curVal['logo_url'] === oldVal['logo_url']) {
+        this.onChange()
+      } else {
+        // 判断是否本地资源
+        // ASCII表 | 56 . | 57 / |
+        const avatarUrl = /^\56?\56\57|http|wxfile|^$/.test(curVal['logo_url']) ? curVal['logo_url'] : `${this.host}${curVal['logo_url']}`
+        // 下载头像资源
+        wepy.downloadFile({
+          url: avatarUrl,
+          success: res => {
+            const { tempFilePath } = res
+            this.avatarUrl = tempFilePath
+            this.$apply()
+            this.onChange()
+          },
+          fail: res => {
+            console.log(res)
+          }
+        })
+      }
+
+      this.$apply()
       this.onChange()
     },
-    cardStyle (curVal) {
+    cardTemplate (curVal) {
       this.onChange()
     }
   }
@@ -90,22 +126,21 @@ export default class BussinessCardComponent extends wepy.component {
 
   onChange() {
     let elements = {}
-    for (let k in this.cardStyle) {
+    for (let k in this.cardTemplate) {
       switch (k) {
         case 'id':
-        case 'logo':
         case 'card':
           break
         case 'image':
-          const { width, height } = this.cssToObj(this.cardStyle['card'])
-          if (this.cardStyle[k]) {
+          const { width, height } = this.cssToObj(this.cardTemplate['card'])
+          if (this.cardTemplate[k]) {
             elements[k] = {
               display: 'block',
               left: 0,
               top: 0,
               width: width,
               height: height,
-              value: this.cardStyle[k]
+              value: this.cardTemplate[k]
             }
           } else {
             elements[k] = {
@@ -116,13 +151,12 @@ export default class BussinessCardComponent extends wepy.component {
             }
           }
           break
-        case 'address':
-          elements[k] = this.cssToObj(this.cardStyle[k])
-          let address = this.info['address'] || ''
-          elements[k]['value'] = address.length > 15 ? address.substring(0, 15) + '...' : address
+        case 'logo':
+          elements[k] = this.cssToObj(this.cardTemplate[k])
+          elements[k]['value'] = this.avatarUrl
           break
         default:
-          elements[k] = this.cssToObj(this.cardStyle[k])
+          elements[k] = this.cssToObj(this.cardTemplate[k])
           elements[k]['value'] = this.info[k] || ''
       }
     }
@@ -137,9 +171,9 @@ export default class BussinessCardComponent extends wepy.component {
         let key = item.split(':')[0].trim()
         let val = item.split(':')[1].trim()
         if (/rpx$/.test(val)) {
-          val = parseInt(val) / 2 * scale
+          val = parseInt(parseInt(val) / 2 * scale)
         } else if (/px$/.test(val)) {
-          val = parseInt(val) * scale
+          val = parseInt(parseInt(val) * scale)
         }
         obj[key] = val
       }
@@ -168,6 +202,7 @@ export default class BussinessCardComponent extends wepy.component {
     }
     return css
   }
+
   init(elements) {
     const card = wepy.createCanvasContext('businessCardCanvas')
     card.setTextAlign('left')
@@ -178,6 +213,9 @@ export default class BussinessCardComponent extends wepy.component {
       const { display, left, top, value, width, height, color } = element
       switch (key) {
         case 'logo': // 头像（暂时不处理）
+          if (display === 'block' && value) {
+            card.drawImage(value, left, top, width, height)
+          }
           break
         case 'image': // 背景图
           if (display === 'block') {

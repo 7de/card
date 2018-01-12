@@ -33,14 +33,14 @@
       float: right;
       font-size: 28rpx;
       line-height: 75rpx;
-      border:1px solid #eee;
+      border: 1px solid #eee;
       &::after{
-        border:none;
+        border: none;
       }
     }
   }
   .color_737373{
-    color:#737373;
+    color: #737373;
   }
 </style>
 
@@ -76,14 +76,14 @@
                 </view>
                 <view class="form-preview__value">
                   <view class="form-preview__item">
-                    <text class="form-preview__label" wx:if="{{item.demand && item.demand.type === 1}}">纸质名片定制</text>
-                    <text class="form-preview__label" wx:if="{{item.demand && item.demand.type === 2}}">需求名片定制</text>
-                    <text class="form-preview__label" wx:if="{{item.demand && item.demand.type === 3}}">个人视频定制</text>
-                    <text class="form-preview__label" wx:if="{{item.demand && item.demand.type === 4}}">企业视频定制</text>
+                    <text class="form-preview__label" wx:if="{{item.demand && item.demand.type === 1}}">纸质名片转电子名片</text>
+                    <text class="form-preview__label" wx:if="{{item.demand && item.demand.type === 2}}">设计名片</text>
+                    <text class="form-preview__label" wx:if="{{item.demand && item.demand.type === 3}}">个人视频</text>
+                    <text class="form-preview__label" wx:if="{{item.demand && item.demand.type === 4}}">企业视频</text>
                     <text class="form-preview__value">{{item.created_at}}</text>
                   </view>
                   <view class="form-preview__item">
-                    <text class="form-preview__label color_737373" style="line-height:1.2;text-align:left;text-align-last:left;">需求描述：{{item.demand && item.demand.describe || ''}}</text>
+                    <text class="form-preview__label color_737373" class="text-line-2" style="line-height:1.2;text-align:left;text-align-last:left;">需求描述：{{item.demand && item.demand.describe || ''}}</text>
                   </view>
                 </view>
               </view>

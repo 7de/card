@@ -29,10 +29,9 @@
     display: inline-block;
     margin-top: 12rpx;
     margin-left: 2px;
-    color: #ff4444;
-    font-size: 48rpx;
+    color: #ff4444; // font-size: 48rpx;
     line-height: 0;
-    vertical-align: middle;
+    vertical-align: baseline;
   }
 }
 
@@ -109,4 +108,13 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+.video-area {
+  margin-bottom: 20rpx;
+  text-align: center;
+  video {
+    width: 600rpx;
+    height: 360rpx;
+  }
 }

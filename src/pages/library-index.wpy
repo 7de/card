@@ -52,7 +52,7 @@
 
 <template>
   <import src="../template/business-card.wxml"/>
-  <scroll-view class="body" scroll-y="{{true}}" bindscrolltolower="bindScrollLower" style="height:{{windowHeight}}px">
+  <scroll-view class="body" scroll-y="{{true}}" enable-back-to-top="{{true}}" bindscrolltolower="bindScrollLower" style="height:{{windowHeight}}px">
     <search-bar :keyword.sync="searchKeyword" @confirm.user="bindConfirm" placeholder="输入姓名/公司"></search-bar>
     <view class="cells cells_order">
       <view class="cell">
@@ -92,7 +92,7 @@
             </view>
             <view class="media-box__hd">
               <image class="media-box__thumb round" src="{{host}}{{item.info.logo_url}}" lazy-load="{{true}}" wx:if="{{item.info.logo_url}}" />
-              <i class="iconfont icon-v-circle" wx:if="{{item.info.userInfo.user_verify_status === 1}}"></i>
+              <i class="iconfont icon-v-circle" wx:if="{{item.info.userInfo.user_verify_status === 2}}"></i>
             </view>
             <view class="media-box__bd">
               <view class="media-box__title">{{item.info.name}}</view>
@@ -148,7 +148,8 @@
   import SearchBarComponent from '@Components/search-bar'
   export default class LibraryIndex extends wepy.page {
     config = {
-      navigationBarTitleText: '名片库'
+      navigationBarTitleText: '名片库',
+      enablePullDownRefresh: true
     }
     mixins = [RestructureMixin, ConfigMixin]
     components = {
@@ -277,6 +278,11 @@
         this.fetchSearchList()
       }
     }
+    onPullDownRefresh() {
+      this.list = []
+      this.fetchSearchList({page: 1})
+      wepy.stopPullDownRefresh()
+    }
     // 搜索名片库列表
     fetchSearchList(params = {}) {
       this.searchLoading = true
@@ -285,6 +291,7 @@
       this.$parent.get(URL, this.params).then(res => {
         const { data } = res
         setTimeout(() => {
+          wepy.stopPullDownRefresh()
           this.list.push(...this.restructureList(data.list))
           // 隐藏加载文字
           this.searchLoadingComplete = (this.params.page >= data.pageCount)

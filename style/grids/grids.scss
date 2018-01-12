@@ -2,8 +2,6 @@
   display: block;
   padding-top: 1px;
   background-color: #ffffff;
-  border: 1px solid #eeeeee;
-  border-radius: 5px;
   overflow: hidden;
   position: relative;
 }
@@ -36,12 +34,6 @@
     -webkit-transform: scaleY(0.5);
     transform: scaleY(0.5);
   }
-  &__icon {
-    margin: 0 auto;
-    display: block;
-    width: 68rpx;
-    height: 68rpx;
-  }
   &__label {
     display: block;
     text-align: center;
@@ -51,8 +43,23 @@
     text-overflow: ellipsis;
     overflow: hidden;
   }
+  &__icon {
+    margin: 0 auto;
+    display: block;
+    width: 68rpx;
+    height: 68rpx;
+  }
   &__icon+&__label {
     margin-top: 10rpx;
+  }
+  &__image {
+    margin: 0 auto;
+    display: block;
+    width: 80rpx;
+    height: 80rpx;
+  }
+  &__image+&__label {
+    margin-top: 20rpx;
   }
 }
 

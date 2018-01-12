@@ -8,12 +8,12 @@
       <view class="panel__bd">
         <button class="media-box media-box_appmsg" type="inherit" data-url="user-create" formType="submit">
           <view class="media-box__hd">
-            <image class="media-box__thumb round" src="{{userInfo['logo_url']}}" />
-            <i class="iconfont icon-v-circle"></i>
+            <image class="media-box__thumb round" src="{{cardInfo['avatar']}}" />
+            <i class="iconfont icon-v-circle" wx:if="{{userInfo.user_verify_status === 2}}"></i>
           </view>
           <view class="media-box__bd">
-            <view class="media-box__title">{{userInfo.name}}</view>
-            <view class="media-box__desc">{{userInfo.position}}</view>
+            <view class="media-box__title">{{cardInfo['name']}}</view>
+            <view class="media-box__desc">{{cardInfo['position']}}</view>
           </view>
         </button>
       </view>
@@ -72,7 +72,8 @@
     }
     mixins = [ConfigMixin]
     data = {
-      userInfo: {}
+      userInfo: {},
+      cardInfo: {}
     }
 
     onShareAppMessage(res) {
@@ -83,29 +84,27 @@
     }
 
     onShow() {
-      console.log()
       try {
-        let cardInfo = wepy.getStorageSync('cardInfo')
-        if (cardInfo) {
-          this.userInfo = cardInfo
-          this.userInfo['logo_url'] = this.userInfo['logo_url'] ? this.host + this.userInfo['logo_url'] : ''
-          this.$apply()
-        } else {
-          wepy.getUserInfo({
-            withCredentials: false,
-            success: res => {
-              const { userInfo: {
-                avatarUrl,
-                nickName
-              } } = res
-              this.userInfo['logo_url'] = avatarUrl
-              this.userInfo['name'] = nickName
-              this.$apply()
-            }
-          })
-        }
+        this.userInfo = wepy.getStorageSync('userInfo')
+        this.cardInfo = wepy.getStorageSync('cardInfo')
+        this.cardInfo['avatar'] = /^\56?\56\57|http|wxfile|^$/.test(this.cardInfo['logo_url']) ? this.cardInfo['logo_url'] : this.host + this.cardInfo['logo_url']
+        this.$apply()
       } catch (e) {
-        // Do something when catch error
+        Promise.all([
+          this.$parent.get('/card/my-card'),
+          this.$parent.get('/card/user-info')
+        ]).then(res => {
+          const [cardInfo, userInfo] = res
+          if (cardInfo.code === 0 && userInfo === 0) {
+            // 缓存数据
+            wepy.setStorageSync('cardInfo', cardInfo['data'])
+            wepy.setStorageSync('userInfo', userInfo['data'])
+  
+            this.cardInfo = cardInfo['data']
+            this.userInfo = userInfo['data']
+            this.$apply()
+          }
+        })
       }
     }
   }

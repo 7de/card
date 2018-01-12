@@ -86,8 +86,8 @@
     </view>
     <view class="page-message__opr-area">
       <view class="btn-area">
-        <button type="primary" wx:if="{{info.user_verify_status === 3}}" @tap="resetFormFun">重新认证</button>
-        <button type="primary" data-type="switchTab" data-url="user-index" formType="submit" wx:else>返回首页</button>
+        <button type="primary" @tap="resetFormFun" wx:if="{{info.user_verify_status === 3}}">重新认证</button>
+        <button type="primary" data-type="switchTab" data-url="user-index" formType="submit" wx:elif="{{info.user_verify_status === 1 || info.user_verify_status === 2}}">返回首页</button>
       </view>
     </view>
   </form>
@@ -131,7 +131,6 @@
           return false
         }
         this.$parent.post(URL, params).then(res => {
-          console.log(res)
           const { code, message } = res
           if (code === 0) {
             wepy.navigateTo({url: `more-certification`})
@@ -166,10 +165,29 @@
               confirmColor: '#1875f0'
             })
           } else {
-            this.isCountDown = true
-            this.countDownNum = 60
-            this.$apply()
-            this.countDown(this)
+            const URL = '/card/send-phone-code'
+            wepy.showLoading({mask: true})
+            this.$parent.post(URL, { phone: phone }).then(res => {
+              const { code, message } = res
+              if (code === 0) {
+                this.isCountDown = true
+                this.countDownNum = 60
+                this.$apply()
+                this.countDown(this)
+              } else {
+                wepy.showModal({
+                  title: '温馨提示',
+                  content: message,
+                  showCancel: false,
+                  confirmColor: '#1875f0',
+                  success: function(res) {
+                    wepy.navigateBack()
+                  }
+                })
+              }
+              this.$apply()
+              wepy.hideLoading()
+            })
           }
         }
       },
@@ -183,11 +201,14 @@
       for (let k in data) {
         if (data[k] === '') {
           switch (k) {
-            case 'phone':
-              message = '手机号码不能为'
-              break
             case 'realname':
               message = '姓名不能为空'
+              break
+            case 'phone':
+              message = '手机号码不能为空'
+              break
+            case 'code':
+              message = '验证码不能为空'
               break
             case 'card_no':
               message = '身份证号不能为空'

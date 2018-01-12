@@ -76,15 +76,18 @@
         const URL = `/card-records`
         wepy.showLoading({ mask: true })
         this.$parent.post(URL, value).then(res => {
-          const { message } = res
+          const { code, message } = res
+          if (code === 0) {
+            wepy.navigateBack()
+          } else {
+            wepy.showModal({
+              title: '温馨提示',
+              content: message,
+              showCancel: false,
+              confirmColor: '#1875f0'
+            })
+          }
           wepy.hideLoading()
-          wepy.showModal({
-            title: '温馨提示',
-            content: message,
-            showCancel: false,
-            confirmColor: '#1875f0',
-            success: () => wepy.navigateBack()
-          })
         })
       }
     }

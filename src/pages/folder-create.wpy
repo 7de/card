@@ -1,54 +1,61 @@
 <style lang="scss">
+  .card-image {
+    margin: 20rpx auto;
+    display: block;
+    width: 100%;
+    height:410rpx;
+  }
 </style>
 
 <template>
-  <create :dCard.sync="dCard"/>
+  <view class="body">
+    <image class="card-image" mode="aspectFit" src="{{host}}{{dCard['card_image']}}" wx:if="{{dCard['card_type'] === 1}}" />
+    <card :info.sync="dCard" wx:else></card>
+    <create :dCard.sync="dCard"></create>
+  </view>
 </template>
 
 <script>
   import wepy from 'wepy'
-
-  import cardCreate from '@Components/business-card-create'
-
+  import ConfigMixin from '../mixins/config'
+  import Card from '@Components/business-card'
+  import CardCreate from '@Components/business-card-create'
   export default class FolderCreate extends wepy.page {
     config = {
       navigationBarTitleText: '添加名片'
     }
+    mixins = [ConfigMixin]
     components = {
-      create: cardCreate
+      card: Card,
+      create: CardCreate
     }
     data = {
-      dCard: {}
+      dCard: {
+        card_type: 0
+      }
     }
     methods = {
-      bindKeyInput(k, e) {
-        this.dCard[k] = e.detail.value
-      },
-      formSubmit(e) {
-        const URL = '/card/cards'
-        let params = e.detail.value
-        Object.assign(params, {
-          card_type: 0,
-          template_type: null
-        })
-        console.log(e.detail.value)
-        this.$parent.post(URL, params).then(res => {
-          const {code, message} = res
-          if (code === 0) {
-            wepy.showToast({
-              title: '添加成功',
-              icon: 'success'
-            })
-            wepy.navigateTo({url: '/pages/folder-index'})
-          } else {
-            wepy.showToast({
-              title: message,
-              icon: 'loading'
-            })
-            console.log(res)
-          }
-        })
+
+    }
+
+    onLoad(options) {
+      const { type } = options
+      if (type === 'scan') {
+        this.dCard = wepy.getStorageSync('scanData')
+        this.$apply()
       }
+      // 初始化名片样式
+      this.$invoke('card', 'setTemplate', {
+        card: 'width:690rpx;height:410rpx;',
+        image: '',
+        logo: 'display:block;left:534rpx;top:40rpx;width:106rpx;height:106rpx;',
+        company: 'display:block;left:40rpx;top:50rpx;color:#666666;font-size:30rpx;',
+        name: 'display:block;left:40rpx;top:135rpx;color:#333333;font-size:42rpx;',
+        position: 'display:block;left:40rpx;top:195rpx;color:#808080;font-size:26rpx;',
+        mobile: 'display:block;left:40rpx;top:250rpx;color:#1875f0;font-size:26rpx;',
+        email: 'display:block;left:40rpx;top:300rpx;color:#808080;font-size:26rpx;',
+        address: 'display:block;left:40rpx;top:350rpx;color:#1875f0;font-size:26rpx;'
+      })
     }
   }
 </script>

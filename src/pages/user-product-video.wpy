@@ -11,11 +11,11 @@
 <template>
   <view class="body">
 
-    <image src="../images/product-video.png" />
+    <image src="../images/product-video.jpg" />
 
     <form report-submit="{{true}}" bindsubmit="bindFormSubmit" bindreset="formReset">
       <view class="cells">
-        <view class="form-cell">
+        <view class="form-cell cell_access">
           <view class="form-cell__hd">类别</view>
           <view class="form-cell__bd">
             <picker bindchange="pickerChange" range="{{typeArray}}" class="form-cell__ctrl" type="text" name="type" value="{{typeValue}}">
@@ -23,6 +23,7 @@
               <view wx:else>{{typeArray[typeValue - 3]}}</view>
             </picker>
           </view>
+          <view class="form-cell__ft"></view>
         </view>
       </view>
       
@@ -32,7 +33,7 @@
             <textarea class="form-cell__ctrl" name="describe" data-name="describe" maxlength="150" value="{{describe}}" bindblur="cache" placeholder="请填写您的视频需求，150字以内"></textarea>
           </view>
         </view>
-        <upload-image name="urls" count="6" />
+        <upload-image name="urls" count="3" />
       </view>
 
       <view class="cells__title">
@@ -74,7 +75,7 @@
       'upload-image': UploadImageComponent
     }
     data = {
-      typeArray: ['个人视频', '企业宣传视频'],
+      typeArray: ['个人视频', '企业视频'],
       typeValue: '',
       urls: '',
       describe: '',

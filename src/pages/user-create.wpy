@@ -2,27 +2,8 @@
   .user-create {
     display: block;
     position: relative;
-    &__card {
-      width: 100%;
-      height: 450rpx;
-      font-size: 0;
-      text-align: center;
-      overflow: hidden;
-      &::before {
-        content: " ";
-        display: inline-block;
-        height: 100%;
-        vertical-align: middle;
-      }
-      .business-card {
-        margin: 0;
-        display: inline-block;
-        text-align: left;
-        vertical-align: middle;
-      }
-    }
-    &,
-    &__form {
+
+    &, &__form {
       &::before,
       &::after {
         content: " ";
@@ -31,32 +12,57 @@
       }
     }
   }
-  .video-area {
-    margin-bottom: 20rpx;
+
+  .business-card__video {
     text-align: center;
-    video {
-      width: 600rpx;
-      height: 360rpx;
+    line-height: 106rpx;
+    cover-image {
+      display: inline-block;
+      width: 40rpx;
+      height: 40rpx;
+      vertical-align: -10rpx;
     }
   }
-  .upload-image__btn {
-    margin: -18rpx -30rpx;
+
+  .business-card__mask {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    text-align: center;
+    cover-image {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .business-card__btn {
+    display: inline-block;
+    width: 222rpx;
+    background-color: #1875f0;
+    color: #ffffff;
+    font-size: 28rpx;
+    line-height: 2em;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -111rpx;
+    margin-top: -20rpx;
   }
 </style>
 
 <template>
   <form class="user-create" report-submit="{{true}}" bindsubmit="bindFormSubmit" bindreset="formReset">
-    <view class="user-create__card">
-      <card :info.sync="dCard">
-        <view class="business-card__video" slot="video" @tap="play" wx:if="{{dCard.video_url}}">
-          <view class="business-card__null">
-            <view class="business-card__null__content">
-              <i class="iconfont icon-play"></i>
-            </view>
-          </view>
-        </view>
-      </card>
-    </view>
+    <card :info.sync="dCard">
+      <cover-view class="business-card__video" slot="video" wx:if="{{dCard.video_url}}">
+        <cover-image src="../images/icon-play.png" />
+      </cover-view>
+      <cover-view class="business-card__mask" slot="mask" @tap="navigateTo('user-product-card')" wx:if="{{isMask}}">
+        <cover-image src="../images/card-mask.png" />
+        <cover-view class="business-card__btn round">点击定制名片</cover-view>
+      </cover-view>
+    </card>
     <card-list :cards.sync="cards" name="template_id" :value.sync="currentCard" @onChange.user="bgUpdate" />
     <view class="cells">
       <view class="form-cell">
@@ -202,6 +208,7 @@
       uploader: UploaderComponent
     }
     data = {
+      isMask: false,
       isShow: false,
       cards: [],
       dCard: {},
@@ -213,6 +220,9 @@
       image: ''
     }
     methods = {
+      navigateTo(url) {
+        wepy.navigateTo({ url })
+      },
       play() {
         this.$invoke('video-player', 'set', this.host + this.dCard.video_url)
         this.$invoke('video-player', 'show')
@@ -235,8 +245,12 @@
         this.dCard.public = e.detail.value ? 1 : 0
       },
       bgUpdate(data, evt) {
-        if (!data) return
-        this.$invoke('card', 'setTemplate', data)
+        if (data) {
+          this.isMask = false
+          this.$invoke('card', 'setTemplate', data)
+        } else {
+          this.isMask = true
+        }
       },
       bindFormSubmit(e) {
         // 绘制名片
@@ -254,13 +268,10 @@
             card_image: cardImage
           }, e.detail.value)
           this.$parent.put(PUT_URL, params).then(res => {
-            let { code, data, message } = res
+            let { code, message } = res
             if (code === 0) {
-              // 缓存个人信息
-              wepy.setStorageSync('cardInfo', data)
               wepy.navigateBack({delta: 1})
             } else {
-              console.log(message)
               wepy.showToast({
                 title: message,
                 icon: 'loading'

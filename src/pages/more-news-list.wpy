@@ -12,19 +12,25 @@
       }
     }
     .cell__btn {
-      margin-right: -100rpx;
+      margin-right: -100px;
       display: flex;
       align-items: center;
       text-align: center;
       background-color: #f00;
-      width: 100rpx;
+      width: 100px;
       position: absolute;
       top: 0;
       right: 0;
-      height: 100%;
+      bottom: 0;
       &__label {
         flex: 1;
+        height: 100%;
+        background-color: #F44336;
         color: #ffffff;
+        line-height: 160rpx;
+        &:first-child {
+          background-color: #1875f0;
+        }
       }
     }
     &__sub-title{
@@ -38,6 +44,11 @@
       }
     }
   }
+  .cells,
+  .cell {
+    height: auto;
+    box-sizing: border-box;
+  }
 </style>
 
 <template>
@@ -47,9 +58,9 @@
         <image class="page-error__image" src="../images/news_error.png" style="width:280rpx;height:190rpx;margin:0 auto;"></image>
         <text class="page-error__sub-title">还没有消息呦</text>
       </view>
-      <repeat for="{{list}}" key="news_list" item="item">
-        <view class="cells" style="margin-top:0">
-          <view class="cell cell_news" hover-class="cell_news_delete" hover-start-time="1000" hover-stay-time="5000">
+      <movable-area class="cells" style="width:{{windowWidth+100}}px;margin-left:-100px;">
+        <repeat for="{{list}}" key="news_list" item="item">
+          <movable-view class="cell cell_news" out-of-bounds="true" direction="horizontal" data-index="{{index}}" x="{{item.left}}" catchtouchstart="handlerStart" catchtouchmove="handlerMove" catchtouchend="handlerEnd" damping="200" style="width:{{windowWidth}}px">
             <view class="cell__hd" wx:if="{{item.message_type === 1}}">
               <image src="../images/news_system.png" style="width:100rpx;height:100rpx;"></image>
             </view>
@@ -68,11 +79,12 @@
               <view class="cell__sub-title">{{item.content}}</view>
             </view>
             <view class="cell__btn">
-              <view class="cell__btn__label" @tap="deleNews({{item.id}})">删除</view>
+              <view class="cell__btn__label" data-cardkey="{{item.target}}" wx:if="{{item.message_type === 2}}">查看</view>
+              <view class="cell__btn__label" data-id="{{item.id}}">删除</view>
             </view>
-          </view>
-        </view>
-      </repeat>
+          </movable-view>
+        </repeat>
+      </movable-area>
       <!-- 上拉加载 -->
       <view class="loadmore" wx:if="{{searchLoading}}">
         <i class="icon-loading"></i>
@@ -94,44 +106,62 @@
       navigationBarTitleText: '消息中心'
     }
     mixins = [ConfigMixin]
+    props = {
+      toggle: {
+        type: Boolean,
+        twoWay: true
+      }
+    }
     data = {
+      logo: {},
+      position: { left: 0, top: 0 },
       list: [],
       params: {
         page: 1
       },
+      touchStartX: 0,
+      touchStartY: 0,
       searchLoading: false,
       searchLoadingComplete: false // 加载完毕
     }
     methods = {
-      deleNews(id) {
-        wepy.showModal({
-          title: '温馨提示',
-          content: '是否确认移除此消息？',
-          confirmColor: '#1875f0',
-          success: res => {
-            const { confirm } = res
-            if (confirm) {
-              const URL = `/messages/${id}`
-              this.$parent.delete(URL).then(res => {
-                const { code, message } = res
-                if (code === 0) {
-                  this.getNewsList()
-                } else {
-                  wepy.showModal({
-                    title: '系统提示',
-                    content: message,
-                    showCancel: false,
-                    confirmColor: '#1875f0'
-                  })
-                }
-              })
-            }
-          }
+      handlerStart(e) {
+        const { clientX } = e.changedTouches[0]
+        this.touchStartX = clientX
+
+        this.list.forEach(item => {
+          item['left'] = 100
         })
+
+        const { cardkey, id } = e.target.dataset
+        if (cardkey) {
+          wepy.navigateTo({url: `user-share?scene=${cardkey}`})
+        } else if (id) {
+          this.deleteNew(id)
+        }
+      },
+      handlerMove(e) {
+        const { index } = e.currentTarget.dataset
+        const { clientX } = e.changedTouches[0]
+        const moveX = clientX - this.touchStartX
+        this.list[index]['left'] = moveX
+      },
+      handlerEnd(e) {
+        const { index } = e.currentTarget.dataset
+        const { clientX } = e.changedTouches[0]
+        const moveX = clientX - this.touchStartX
+        if (moveX < -100) {
+          this.list[index]['left'] = 0
+        } else {
+          this.list[index]['left'] = 100
+        }
+        this.$apply()
       }
     }
     onLoad() {
       this.getNewsList()
+      // const { windowWidth } = wepy.getSystemInfoSync()
+      // this.windowWidth = windowWidth
     }
     getNewsList() {
       const URL = '/messages'
@@ -149,6 +179,7 @@
           } else {
             item.created_at = moment(item.created_at * 1000).format('YYYY-MM-DD')
           }
+          item.left = 100
         })
         setTimeout(() => {
           this.list.push(...items)
@@ -157,6 +188,32 @@
           this.searchLoading = false
           this.$apply()
         }, 200)
+      })
+    }
+    deleteNew(id) {
+      wepy.showModal({
+        title: '温馨提示',
+        content: '是否确认移除此消息？',
+        confirmColor: '#1875f0',
+        success: res => {
+          const { confirm } = res
+          if (confirm) {
+            const URL = `/messages/${id}`
+            this.$parent.delete(URL).then(res => {
+              const { code, message } = res
+              if (code === 0) {
+                this.getNewsList()
+              } else {
+                wepy.showModal({
+                  title: '系统提示',
+                  content: message,
+                  showCancel: false,
+                  confirmColor: '#1875f0'
+                })
+              }
+            })
+          }
+        }
       })
     }
   }

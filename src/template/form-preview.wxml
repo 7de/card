@@ -3,10 +3,10 @@
     <view class="form-preview__bd">
       <view class="form-preview__item">
         <text class="form-preview__label">名片类型</text>
-        <text class="form-preview__value" wx:if="{{demand && demand.type === 1}}">纸质名片定制</text>
-        <text class="form-preview__value" wx:if="{{demand && demand.type === 2}}">需求名片定制</text>
-        <text class="form-preview__value" wx:if="{{demand && demand.type === 3}}">个人视频定制</text>
-        <text class="form-preview__value" wx:if="{{demand && demand.type === 4}}">企业视频定制</text>
+        <text class="form-preview__value" wx:if="{{demand && demand.type === 1}}">纸质名片转电子名片</text>
+        <text class="form-preview__value" wx:if="{{demand && demand.type === 2}}">设计名片</text>
+        <text class="form-preview__value" wx:if="{{demand && demand.type === 3}}">个人视频</text>
+        <text class="form-preview__value" wx:if="{{demand && demand.type === 4}}">企业视频</text>
       </view>
     </view>
     <view class="form-preview__bd">
@@ -35,7 +35,7 @@
         <text class="form-preview__value">{{demand && demand.contact_phone || ''}}</text>
       </view>
       <view class="form-preview__item" wx:if="{{demand && demand.poster_company}}">
-        <text class="form-preview__label">联系电话</text>
+        <text class="form-preview__label">公司名称</text>
         <text class="form-preview__value">{{demand && demand.poster_company}}</text>
       </view>
     </view>

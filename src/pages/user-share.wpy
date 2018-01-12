@@ -10,7 +10,11 @@
 
 <template>
   <form report-submit="{{true}}" bindsubmit="bindFormSubmit">
-    <scroll-view scroll-y="{{!isShow}}" class="body" style="height: {{windowHeight}}px">
+    <view class="loadmore" wx:if="{{searchLoading}}">
+      <i class="icon-loading"></i>
+      <text class="loadmore__tips">正在加载</text>
+    </view>
+    <scroll-view scroll-y="{{!isShow}}" class="body" style="height:{{windowHeight}}px" wx:else>
       <import src="../template/business-card.wxml"/>
       <template is="business-card" data="{{info, template, host}}"/>
       <view class="grids grids_avg-3 card">
@@ -72,7 +76,8 @@
       currentTab: 0,
       info: {},
       template: {},
-      isShow: false
+      isShow: false,
+      searchLoading: false // 加载中
     }
     methods = {
       saveToPhone() {
@@ -154,30 +159,64 @@
     onLoad(options) {
       var scene = decodeURIComponent(options.scene)
       this.scene = scene
-      this.getMycard(scene)
+      this.fetchData(scene)
     }
-    getMycard(cardKey) {
-      wepy.showLoading({mask: true})
-      this.$parent.get('/card/my-card').then(res => {
-        const { code, data } = res
-        if (code === 0) {
-          this.myName = data.name
-          this.myKey = data.card_key
-          this.$apply()
-        }
-        this.$parent.get(`/card/share/${cardKey}`).then(res => {
-          const { data } = res
-          let { info, template } = this.restructure(data)
-          info['urls'] = info.image ? info.image.split('|') : []
-          info['urls'].forEach((url, index, arr) => {
-            arr[index] = this.host + url
+    fetchData(cardKey) {
+      this.searchLoading = true
+      Promise.all([
+        this.$parent.get('/card/my-card'),
+        this.$parent.get(`/card/share/${cardKey}`)
+      ]).then(res => {
+        const [myCardInfo, sceneCardInfo] = res
+        if (myCardInfo['code'] === 0 && sceneCardInfo['code'] === 0) {
+          // 我的资料
+          this.myName = myCardInfo['data']['name']
+          this.myKey = myCardInfo['data']['card_key']
+
+          // 如果这是我的名片或对方公开名片
+          if (this.myKey === cardKey || sceneCardInfo['data']['public'] === 1) {
+            let { info, template } = this.restructure(sceneCardInfo['data'])
+            info['urls'] = info.image ? info.image.split('|') : []
+            info['urls'].forEach((url, index, arr) => {
+              arr[index] = this.host + url
+            })
+            this.info = info
+            this.template = template
+            this.$invoke('video-player', 'set', this.host + info['video_url'])
+            this.searchLoading = false
+            this.$apply()
+          } else {
+            wepy.showModal({
+              title: '温馨提示',
+              content: '目前对方没有公开名片',
+              showCancel: false,
+              confirmColor: '#1875f0',
+              success: function (res) {
+                wepy.navigateBack()
+              }
+            })
+          }
+        } else if (myCardInfo['code'] === 0) {
+          wepy.showModal({
+            title: '温馨提示',
+            content: sceneCardInfo['message'],
+            showCancel: false,
+            confirmColor: '#1875f0',
+            success: function (res) {
+              wepy.navigateBack()
+            }
           })
-          this.info = info
-          this.template = template
-          this.$invoke('video-player', 'set', this.host + data.video_url)
-          this.$apply()
-          wepy.hideLoading()
-        })
+        } else {
+          wepy.showModal({
+            title: '温馨提示',
+            content: myCardInfo['message'],
+            showCancel: false,
+            confirmColor: '#1875f0',
+            success: function (res) {
+              wepy.navigateBack()
+            }
+          })
+        }
       })
     }
     onShareAppMessage() {

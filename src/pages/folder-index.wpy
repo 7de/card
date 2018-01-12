@@ -2,7 +2,7 @@
 </style>
 
 <template>
-  <scroll-view class="body" scroll-y="{{!isShow}}" scroll-with-animation="{{true}}" enable-back-to-top="{{true}}" scroll-into-view="{{tag === '#' ? 'AA' : tag}}" style="height:{{windowHeight}}px">
+  <scroll-view class="body" scroll-y="{{!isShow}}" enable-back-to-top="{{true}}" scroll-with-animation="{{true}}" scroll-into-view="{{tag === '#' ? 'AA' : tag}}" style="height:{{windowHeight}}px">
     <search-bar @confirm.user="search" placeholder="输入姓名/公司">
       <label class="search-bar__btn">
         <i class="iconfont icon-list" @tap="show"></i>

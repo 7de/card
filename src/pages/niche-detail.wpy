@@ -9,11 +9,11 @@
         <view class="media-box media-box_text">
           <view class="media-box__hd">
               <image class="media-box__thumb round" src="{{item['posterInfo']['logo_url']}}" />
-              <i class="iconfont icon-v-circle" wx:if="{{item['posterInfo']['user_verify_status'] === 1}}"></i>
+              <i class="iconfont icon-v-circle" wx:if="{{item['posterInfo']['user_verify_status'] === 2}}"></i>
             </view>
           <view class="media-box__title">{{item.title}}</view>
           <view class="media-box__sub-title">
-            {{item['poster_name']}} | {{item['poster_company']}}
+            {{item['posterInfo']['poster_name']}} | {{item['posterInfo']['poster_company']}}
           </view>
           <view class="media-box__content">{{item['content']}}</view>
           <view class="media-box__info" wx:if="{{item['images'].length > 0}}">

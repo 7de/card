@@ -29,7 +29,7 @@
       <view class="page-error" wx:elif="{{!searchLoading && searchLoadingComplete}}">
         <image class="page-error__image" src="../images/list_error.png" style="width: 291rpx;height: 170rpx"></image>
         <view class="loadmore">
-          <text class="loadmore__tips">暂无名片</text>
+          <text class="loadmore__tips">暂无记录</text>
         </view>
       </view>
       <!-- 加载 -->
@@ -92,11 +92,14 @@
 
     onShow() {
       const { id } = this.data
+      this.items = []
+      this.$apply()
       this.fetchSearchList(id)
     }
 
     fetchSearchList(id) {
       this.searchLoading = true
+      this.$apply()
       Promise.all([
         this.$parent.get(`/card/${id}`),
         this.$parent.get(`/card-record/list/${id}`)

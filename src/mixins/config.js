@@ -2,7 +2,8 @@ import wepy from 'wepy'
 export default class ConfigMixin extends wepy.mixin {
   data = {
     host: null,
-    windowHeight: null
+    windowWidth: 0,
+    windowHeight: 0
   }
   onLoad() {
     // global data
@@ -28,14 +29,14 @@ export default class ConfigMixin extends wepy.mixin {
         formId,
         target
       } = e.detail
-      console.log('Post formId')
       if (formId && formId !== 'the formId is a mock one') { // 发送form_id
+        console.log('formId:', formId)
         this._saveFormId(formId)
       }
       if (target.dataset && target.dataset.value) { // 基础事件
         this._defaultEvent(target.dataset)
       }
-      if (target.dataset && target.dataset.url) { // 页面链接
+      if (target.dataset && (target.dataset.url || target.dataset.delta)) { // 页面链接
         this._navigator(target.dataset)
       }
     }
@@ -82,6 +83,7 @@ export default class ConfigMixin extends wepy.mixin {
   _navigator(dataset) {
     const {
       url,
+      delta,
       type
     } = dataset
     switch (type) {
@@ -102,7 +104,7 @@ export default class ConfigMixin extends wepy.mixin {
         break
       case 'navigateBack': // 关闭当前页面，返回上一页面或多级页面
         wepy.navigateBack({
-          delta: parseInt(url)
+          delta
         })
         break
       default: // 保留当前页面，跳转到应用内的某个页面

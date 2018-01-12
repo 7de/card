@@ -2,53 +2,34 @@
 </style>
 
 <template>
-  <view>
-    <view class="body" hidden="{{!hidden}}" style="width:{{windowWidth}}px;height:{{windowHeight}}px;">
-      <card :info.sync="dCard"/>
-      <create :dCard.sync="dCard"/>
-    </view>
-    <view class="body" hidden="{{hidden}}" style="">
-      <view class="cells">
-        <view class="cell cell_access" @tap="chooseImage()">
-          <view class="cell__hd"><i class="iconfont icon-photo mr-10"></i></view>
-          <view class="cell__bd">拍照识别添加</view>
-          <view class="cell__ft"></view>
-        </view>
-        <view class="cell cell_access" @tap="toCreate()">
-          <view class="cell__hd"><i class="iconfont icon-edit mr-10"></i></view>
-          <view class="cell__bd">手动填写添加</view>
-          <view class="cell__ft"></view>
-        </view>
+  <form class="body" report-submit="{{true}}" bindsubmit="bindFormSubmit">
+    <view class="cells">
+      <view class="cell cell_access" @tap="chooseImage">
+        <view class="cell__hd"><i class="iconfont icon-photo mr-10"></i></view>
+        <view class="cell__bd">拍照识别添加</view>
+        <view class="cell__ft"></view>
       </view>
+      <button class="cell cell_access" data-url="folder-create" formType="submit">
+        <view class="cell__hd"><i class="iconfont icon-edit mr-10"></i></view>
+        <view class="cell__bd">手动填写添加</view>
+        <view class="cell__ft"></view>
+      </button>
     </view>
-  </view>
+  </form>
 </template>
 
 <script>
   import wepy from 'wepy'
   import ConfigMixin from '../mixins/config'
-  import Card from '@Components/business-card'
-  import CardCreate from '@Components/business-card-create'
   export default class FolderAdd extends wepy.page {
     config = {
       navigationBarTitleText: '添加名片'
     }
+
     mixins = [ConfigMixin]
-    components = {
-      card: Card,
-      create: CardCreate
-    }
-    data = {
-      hidden: false,
-      dCard: {}
-    }
+
     methods = {
-      toCreate() {
-        this.hidden = true
-        this.dCard = { card_type: 0 }
-      },
       chooseImage() {
-        let self = this
         wepy.chooseImage({
           count: 1,
           sizeType: ['compressed'],
@@ -57,8 +38,7 @@
             this.$parent.cardScan(res.tempFilePaths[0]).then(res => {
               const {result, url} = res
               const _result = result.result
-              self.hidden = true
-              self.dCard = {
+              const dCard = {
                 card_type: 1,
                 address: _result.address && _result.address[0],
                 company: _result.company && _result.company[0],
@@ -72,7 +52,16 @@
                 zipcode: _result.zipcode && _result.zipcode[0],
                 card_image: url
               }
-              self.$apply()
+              wepy.setStorage({
+                key: 'scanData',
+                data: dCard,
+                success: () => {
+                  wepy.hideLoading()
+                  wepy.navigateTo({
+                    url: 'folder-create?type=scan'
+                  })
+                }
+              })
             }).catch(res => {
               const {message} = res
               wepy.showModal({
@@ -85,20 +74,6 @@
           }
         })
       }
-    }
-    onLoad() {
-      // 初始化名片样式
-      this.$invoke('card', 'setTemplate', {
-        card: 'width:690rpx;height:410rpx;',
-        image: '',
-        logo: 'display:block;left:534rpx;top:40rpx;width:106rpx;height:106rpx;',
-        company: 'display:block;left:40rpx;top:50rpx;color:#666666;font-size:30rpx;',
-        name: 'display:block;left:40rpx;top:135rpx;color:#333333;font-size:42rpx;',
-        position: 'display:block;left:40rpx;top:195rpx;color:#808080;font-size:26rpx;',
-        mobile: 'display:block;left:40rpx;top:250rpx;color:#1875f0;font-size:26rpx;',
-        email: 'display:block;left:40rpx;top:300rpx;color:#808080;font-size:26rpx;',
-        address: 'display:block;left:40rpx;top:350rpx;color:#1875f0;font-size:26rpx;'
-      })
     }
   }
 </script>

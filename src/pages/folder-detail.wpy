@@ -10,6 +10,7 @@
     }
     .panel__hd {
       height: 410rpx;
+      overflow:hidden;
       position: relative;
       &::after {
         content: " ";
@@ -69,7 +70,11 @@
 </style>
 
 <template>
-  <form class="page-card" report-submit="{{true}}" bindsubmit="bindFormSubmit">
+  <view class="loadmore" wx:if="{{searchLoading}}">
+    <i class="icon-loading"></i>
+    <text class="loadmore__tips">正在加载</text>
+  </view>
+  <form class="page-card" report-submit="{{true}}" bindsubmit="bindFormSubmit" wx:else>
     <view class="panel panel_card-info">
       <view class="panel__hd" wx:if="{{info && info.card_image}}">
         <image mode="aspectFit" src="{{host}}{{info.card_image}}"/>
@@ -110,7 +115,7 @@
         <text class="grid__label">分享名片</text>
       </button>
       <button class="grid" @tap="unCollect" formType="submit">
-        <image class="grid__icon" src="../images/icon_collection-cancle.png"/>
+        <image class="grid__icon" src="../images/icon-remove.png"/>
         <text class="grid__label">删除名片</text>
       </button>
       <button class="grid" data-url="log-list?id={{info.id}}" formType="submit">
@@ -138,6 +143,7 @@
       'video-player': VideoPlayer
     }
     data = {
+      searchLoading: false,
       info: {}
     }
     methods = {
@@ -169,15 +175,15 @@
 
     getCardInfo(cardKey) {
       const URL = `/card/share/${cardKey}`
-      wepy.showLoading()
+      this.searchLoading = true
       this.$parent.get(URL).then(res => {
         const { data } = res
         const { info } = this.restructure(data)
         this.info = info
+        this.searchLoading = false
         this.$apply()
         // 动态设置导航条
         wepy.setNavigationBarTitle({ title: data.name })
-        wepy.hideLoading()
       })
     }
 

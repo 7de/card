@@ -3,7 +3,7 @@
 
 <template>
   <form bindsubmit="formSubmit" bindreset="formReset">
-    <view class="cells cells_form">
+    <view class="cells">
       <view class="form-cell">
         <view class="form-cell__hd">姓名<text class="text-required"></text></view>
         <view class="form-cell__bd">
@@ -89,7 +89,9 @@
                 title: '添加成功',
                 icon: 'success'
               })
-              wepy.navigateBack()
+              wepy.switchTab({
+                url: 'folder-index'
+              })
             } else {
               wepy.showToast({
                 title: message,
@@ -104,7 +106,9 @@
     draw() {
       const APP = this.$parent.$parent
       return new Promise((resolve, reject) => {
-        if (this.dCard['card_type'] === 0) {
+        if (this.dCard['card_type'] === 1) {
+          resolve(this.dCard['card_image'])
+        } else {
           wepy.canvasToTempFilePath({
             canvasId: 'businessCardCanvas',
             success: res => {
@@ -119,8 +123,6 @@
               )
             }
           })
-        } else {
-          resolve(this.dCard['card_image'])
         }
       })
     }

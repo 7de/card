@@ -3,7 +3,7 @@
 </style>
 
 <template>
-  <scroll-view class="body" scroll-y="{{true}}" bindscrolltolower="bindScrollLower" style="height:{{windowHeight}}px">
+  <scroll-view class="body" scroll-y="{{true}}" enable-back-to-top="{{true}}" bindscrolltolower="bindScrollLower" style="height:{{windowHeight}}px">
     <search-bar :keyword.sync="searchKeyword" @confirm.user="bindConfirm" placeholder="搜索商机/公司">
       <view class="search-bar__btn" @tap="bindSelect">{{itemList[tapIndex]}}</view>
     </search-bar>
@@ -13,11 +13,11 @@
           <button class="media-box media-box_text" type="inherit" data-url="niche-detail?id={{item.id}}" formType="submit">
             <view class="media-box__hd">
               <image class="media-box__thumb round" src="{{item['posterInfo']['logo_url']}}" />
-              <i class="iconfont icon-v-circle" wx:if="{{item['posterInfo']['user_verify_status'] === 1}}"></i>
+              <i class="iconfont icon-v-circle" wx:if="{{item['posterInfo']['user_verify_status'] === 2}}"></i>
             </view>
             <view class="media-box__title">{{item['title']}}</view>
             <view class="media-box__sub-title">
-              {{item['poster_name']}} | {{item['poster_company']}}
+              {{item['posterInfo']['poster_name']}} | {{item['posterInfo']['poster_company']}}
             </view>
             <view class="media-box__desc">{{item['content']}}</view>
             <view class="media-box__info" wx:if="{{item['images'].length > 0}}">
@@ -70,7 +70,8 @@
   import moment from 'moment'
   export default class NicheIndex extends wepy.page {
     config = {
-      navigationBarTitleText: '商机中心'
+      navigationBarTitleText: '商机中心',
+      enablePullDownRefresh: true
     }
     mixins = [ConfigMixin]
     components = {
@@ -88,6 +89,12 @@
       searchLoadingComplete: false // 加载完毕
     }
     methods = {
+      bindConfirm(keyword) { // 搜索
+        this.fetchSearchList({
+          page: 1,
+          keyword
+        })
+      },
       bindSelect() {
         wepy.showActionSheet({
           itemList: this.itemList,
@@ -95,6 +102,7 @@
             if (!this.searchLoading) {
               const { tapIndex } = res
               this.tapIndex = tapIndex
+              this.list = []
               this.fetchSearchList({
                 page: 1,
                 info_type: tapIndex === 0 ? '' : tapIndex
@@ -114,11 +122,14 @@
     }
 
     onRoute() {
-      // 清空数据重新获取
-      this.tapIndex = 0
-      this.params = { page: 1 }
+      if (this.list.length === 0) {
+        this.fetchSearchList()
+      }
+    }
+
+    onPullDownRefresh() {
       this.list = []
-      this.fetchSearchList()
+      this.fetchSearchList({page: 1})
     }
 
     fetchSearchList(params = {}) {
@@ -138,9 +149,10 @@
           arr[index]['posterInfo']['logo_url'] = element['posterInfo']['logo_url'] ? this.host + element['posterInfo']['logo_url'] : ''
         })
         setTimeout(() => {
+          wepy.stopPullDownRefresh()
           // 隐藏加载文字
-          this.list = list
-          this.searchLoadingComplete = (this.params.page >= data.pageCount)
+          this.list.push(...list)
+          this.searchLoadingComplete = (this.params.page >= data['_meta']['pageCount'])
           this.searchLoading = false
           this.$apply()
         }, 200)

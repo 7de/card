@@ -15,7 +15,7 @@
     </view>
     <view class="page-message__opr-area">
       <view class="btn-area">
-        <button type="primary" data-type="navigateBack" data-url="1" formType="submit">确认</button>
+        <button type="primary" data-type="navigateBack" data-delta="1" formType="submit">确认</button>
         <button type="default" data-type="switchTab" data-url="user-index" formType="submit">返回首页</button>
       </view>
     </view>

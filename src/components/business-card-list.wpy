@@ -16,7 +16,6 @@
       text-align: center;
       background-color: #ffffff;
       box-sizing: border-box;
-      border-radius: 5px;
       overflow: hidden;
       position: relative;
       &::after {
@@ -26,13 +25,12 @@
         position: absolute;
         top: 0;
         left: 0;
-        border: 5px solid $borderColor;
+        border: 2px solid $borderColor;
         -webkit-transform: scale(0.5);
         transform: scale(0.5);
         -webkit-transform-origin: 0 0;
         transform-origin: 0 0;
         box-sizing: border-box;
-        border-radius: 10px;
       }
       image {
         width: 100%;
@@ -52,11 +50,11 @@
 
 <template>
   <view class="business-card-list">
-    <navigator class="business-card-list__item" url="user-product-card" style="box-shadow: 0 4rpx 8rpx #999999;">
-      <image mode="aspectFit" src="../images/icon_paper-card.png" style="width:70rpx;" />
-    </navigator>
+    <view class="business-card-list__item{{value === 0 ? ' business-card-list__item_active': ''}}" style="box-shadow: 0 4rpx 8rpx #999999;" @tap="change(0)">
+      <image mode="aspectFit" src="../images/icon-pen.png" style="width:51rpx;" />
+    </view>
     <repeat for="{{cards}}">
-      <view class="business-card-list__item{{value === item.id? ' business-card-list__item_active': ''}}" @tap="change({{item.id}})">
+      <view class="business-card-list__item{{value === item.id ? ' business-card-list__item_active': ''}}" @tap="change({{item.id}})">
         <image mode="scaleToFill" src="{{item.image}}" wx:if="{{item.image}}" />
       </view>
     </repeat>
@@ -72,7 +70,8 @@ export default class BusinessCardListComponent extends wepy.component {
     name: String,
     value: {
       type: [Number, String],
-      default: 0
+      default: 0,
+      twoWay: true
     },
     cards: Array
   }
@@ -84,13 +83,16 @@ export default class BusinessCardListComponent extends wepy.component {
   }
   watch = {
     value (curVal, oldVal) {
-      let data = {}
+      let data = null
       this.cards.forEach(el => {
         if (curVal === el.id) {
           data = el
         }
       })
       this.$emit('onChange', data)
+    },
+    cards (curVal) {
+      console.log(curVal)
     }
   }
   onLoad() {

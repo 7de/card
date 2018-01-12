@@ -1,46 +1,68 @@
 <style lang="scss">
+  .business-card {
+    margin-bottom: 60rpx;
+    box-shadow: 0 4rpx 15rpx rgba(24, 80, 240, .2);
+  }
+  .grid {
+    padding: 30rpx 20rpx 40rpx;
+  }
+  .panel__hd {
+    padding: 20rpx 30rpx;
+    color: #404040;
+    font-size: 30rpx;
+    line-height: 1.6;
+  }
+  .icon-diamond {
+    width: 30rpx;
+    height: 30rpx;
+    vertical-align: middle;
+  }
 </style>
 
 <template>
   <form class="page-card" wx:if="{{isCreate === 1}}" report-submit="{{true}}" bindsubmit="bindFormSubmit">
     <import src="../template/business-card.wxml"/>
     <template is="business-card" data="{{info, template, host, play}}"/>
-    <view class="card">
-      <view class="grids grids_avg-4">
-        <button class="grid" data-url="user-qr-code" formType="submit">
-          <image class="grid__icon" src="../images/icon_code.png"/>
-          <text class="grid__label">名片码</text>
-        </button>
-        <button class="grid" open-type="share" formType="submit">
-          <image class="grid__icon" src="../images/icon_share.png"/>
-          <text class="grid__label">发送名片</text>
-        </button>
-        <button class="grid" data-url="user-create" formType="submit">
-          <image class="grid__icon" src="../images/icon_edit.png"/>
-          <text class="grid__label">编辑名片</text>
-        </button>
-        <button class="grid" data-url="user-settings" formType="submit">
-          <image class="grid__icon" src="../images/icon_lock.png"/>
-          <text class="grid__label">隐私设置</text>
-        </button>
+    <view class="panel">
+      <view class="panel__bd">
+        <view class="grids grids_avg-4">
+          <button class="grid" data-url="user-qr-code" formType="submit">
+            <image class="grid__icon" src="../images/icon_code.png"/>
+            <text class="grid__label">名片码</text>
+          </button>
+          <button class="grid" open-type="share" formType="submit">
+            <image class="grid__icon" src="../images/icon_share.png"/>
+            <text class="grid__label">发送名片</text>
+          </button>
+          <button class="grid" data-url="user-create" formType="submit">
+            <image class="grid__icon" src="../images/icon_edit.png"/>
+            <text class="grid__label">编辑名片</text>
+          </button>
+          <button class="grid" data-url="user-settings" formType="submit">
+            <image class="grid__icon" src="../images/icon_lock.png"/>
+            <text class="grid__label">隐私设置</text>
+          </button>
+        </view>
       </view>
-      <view class="cells__title">
-        <i class="iconfont icon-crown"></i>
+      <view class="panel__hd">
+        <image mode="aspectFill" src="../images/icon-diamond.png" class="icon-diamond" />
         专享服务
       </view>
-      <view class="grids grids_avg-3">
-        <button class="grid" data-url="user-product-card" formType="submit">
-          <image class="grid__icon" src="../images/icon_paper-card.png"/>
-          <text class="grid__label">名片模版定制</text>
-        </button>
-        <button class="grid" data-url="user-product-video" formType="submit">
-          <image class="grid__icon" src="../images/icon_paper-video.png"/>
-          <text class="grid__label">名片视频定制</text>
-        </button>
-        <button class="grid" data-url="user-product-news" formType="submit">
-          <image class="grid__icon" src="../images/icon_paper-plane.png"/>
-          <text class="grid__label">发布商机</text>
-        </button>
+      <view class="panel__bd">
+        <view class="grids grids_avg-3">
+          <button class="grid" data-url="user-product-card" formType="submit">
+            <image class="grid__image" mode="aspectFit" src="../images/icon_paper-card.png"/>
+            <text class="grid__label">名片模版定制</text>
+          </button>
+          <button class="grid" data-url="user-product-video" formType="submit">
+            <image class="grid__image" mode="aspectFit" src="../images/icon_paper-video.png"/>
+            <text class="grid__label">名片视频定制</text>
+          </button>
+          <button class="grid" data-url="user-product-news" formType="submit">
+            <image class="grid__image" mode="aspectFit" src="../images/icon_paper-plane.png"/>
+            <text class="grid__label">发布商机</text>
+          </button>
+        </view>
       </view>
     </view>
   </form>
@@ -104,30 +126,32 @@
     }
     getCard() {
       wepy.showLoading()
-      this.$parent.get('/card/my-card').then(res => {
-        let { code, data } = res
-        if (code === 0) {
-          this.info = data
-          this.$parent.getTemplateById(data.template_id).then(template => {
+      Promise.all([
+        this.$parent.get('/card/my-card'),
+        this.$parent.get('/card/user-info')
+      ]).then(res => {
+        let [cardInfo, userInfo] = res
+        if (cardInfo.code === 0 && userInfo.code === 0) {
+          // 获取名片模版信息
+          this.$parent.getTemplateById(cardInfo['data']['template_id']).then(template => {
+            // 缓存个人信息
+            wepy.setStorageSync('cardInfo', cardInfo['data'])
+            wepy.setStorageSync('userInfo', userInfo['data'])
+            // 动态设置导航条
+            wepy.setNavigationBarColor({
+              frontColor: '#ffffff',
+              backgroundColor: '#1875f0'
+            })
+            this.isCreate = 1
             this.template = template
+            this.info = cardInfo['data']
+            this.$invoke('video-player', 'set', this.host + cardInfo.data.video_url)
             this.$apply()
+            wepy.hideLoading()
           })
-          // 缓存个人信息
-          wepy.setStorageSync('cardInfo', data)
-          this.isCreate = 1
-          this.$invoke('video-player', 'set', this.host + data.video_url)
-
-          // 动态设置导航条
-          wepy.setNavigationBarColor({
-            frontColor: '#ffffff',
-            backgroundColor: '#1875f0'
-          })
-          this.$apply()
         } else {
           this.isCreate = 2
         }
-        this.$apply()
-        wepy.hideLoading()
       })
     }
     onShareAppMessage(res) {
